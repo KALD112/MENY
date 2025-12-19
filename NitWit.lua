@@ -2617,7 +2617,7 @@ MachoMenuText(GeneralLeftSection,"Txadmin exploits")
             MachoMenuNotification("Godmode", "Godmode Deactivated")
         end
     )
-    local GeneralRightTop = MachoMenuGroup(GeneralTab, "Kso7 & NitWit & Bdle &Net", 
+    local GeneralRightTop = MachoMenuGroup(GeneralTab, "Kso7 & NitWit & Bdle & Net", 
         TabsBarWidth + LeftSectionWidth + 10, 5 + MachoPaneGap, 
         MenuSize.x - 5, 5 + MachoPaneGap + RightSectionHeight)
 
