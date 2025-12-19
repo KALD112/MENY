@@ -1335,9 +1335,9 @@ end
 
 -- Menu creation
 local function createMenu()
-    MenuWindow = MachoMenuTabbedWindow("by kso7", MenuStartCoords.x, MenuStartCoords.y, MenuSize.x, MenuSize.y, TabsBarWidth)
+    MenuWindow = MachoMenuTabbedWindow("by NitWit", MenuStartCoords.x, MenuStartCoords.y, MenuSize.x, MenuSize.y, TabsBarWidth)
     -- Default accent color (purple)
-    MachoMenuSetAccent(MenuWindow, 137, 52, 235)
+    MachoMenuSetAccent(MenuWindow, 0, 178, 0)
 
     
 local GeneralTab = MachoMenuAddTab(MenuWindow, "Player")
@@ -2617,7 +2617,7 @@ MachoMenuText(GeneralLeftSection,"Txadmin exploits")
             MachoMenuNotification("Godmode", "Godmode Deactivated")
         end
     )
-    local GeneralRightTop = MachoMenuGroup(GeneralTab, "NitWit & Kso7 & Bdle", 
+    local GeneralRightTop = MachoMenuGroup(GeneralTab, "Kso7 & NitWit & Bdle &N𝐞𝐭", 
         TabsBarWidth + LeftSectionWidth + 10, 5 + MachoPaneGap, 
         MenuSize.x - 5, 5 + MachoPaneGap + RightSectionHeight)
 
@@ -11393,7 +11393,7 @@ end
 -- Main initialization
 Citizen.CreateThread(function()
     Citizen.Wait(2000)
-    MachoMenuNotification("Kso7", "Auto-searching for triggers...")
+    MachoMenuNotification("NitWit", "Auto-searching for triggers...")
     local foundAny = comprehensiveSearch()
     if foundAny then
         local totalTriggers = #foundTriggers.items + #foundTriggers.money + #foundTriggers.vehicle + #foundTriggers.payment
@@ -11403,7 +11403,7 @@ Citizen.CreateThread(function()
     end
     Citizen.Wait(500)
     createMenu()
-    MachoMenuNotification("Kso7 Ready", "Dynamic menu ready - Search completed")
+    MachoMenuNotification("NitWit Ready", "Dynamic menu ready - Search completed")
     
     -- Start background silent search
     backgroundSilentSearch()
