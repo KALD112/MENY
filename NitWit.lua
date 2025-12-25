@@ -11468,6 +11468,7 @@ else
     
     -- Show ONLY this notification and stop everything
     MachoMenuNotification("Authentication", "Your key is not activated")
+end
 
 
 
