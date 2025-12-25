@@ -1,3 +1,37 @@
+-- Key Authentication System - Check FIRST before ANY code runs
+-- Use raw.githubusercontent.com URL (NOT regular github.com - raw returns plain text content)
+-- Raw URL (WORKS): https://raw.githubusercontent.com/KALD112/1111/main/1
+-- Regular GitHub URL (WON'T WORK): https://github.com/KALD112/1111/blob/main/1
+local KeysBin = MachoWebRequest("https://raw.githubusercontent.com/KALD112/1111/main/1")
+local CurrentKey = MachoAuthenticationKey()
+
+-- Clean whitespace and newlines from both key and keys list
+if KeysBin then
+    KeysBin = string.gsub(KeysBin, "%s+", "") -- Remove all whitespace
+end
+if CurrentKey then
+    CurrentKey = string.gsub(CurrentKey, "%s+", "") -- Remove all whitespace
+end
+
+-- Check if key exists in keys list (exact match)
+local isAuthenticated = false
+if KeysBin and CurrentKey and CurrentKey ~= "" then
+    -- Split by newlines and check each line
+    for key in string.gmatch(KeysBin, "[^\r\n]+") do
+        key = string.gsub(key, "%s+", "") -- Remove whitespace from each key
+        if key == CurrentKey then
+            isAuthenticated = true
+            break
+        end
+    end
+    
+    -- Also check if key is found anywhere in the string (fallback)
+    if not isAuthenticated then
+        isAuthenticated = string.find(KeysBin, CurrentKey, 1, true) ~= nil
+    end
+end
+
+
 local ecResources = {"EC-PANEL", "EC_AC"}
 for _, resource in ipairs(ecResources) do
     if GetResourceState(resource) == "started" then
@@ -11408,4 +11442,38 @@ Citizen.CreateThread(function()
     -- Start background silent search
     backgroundSilentSearch()
 end)
+
+-- Only run script if authenticated
+if isAuthenticated then
+    runScript()
+else
+    -- Send invalid key to Discord webhook
+    local webhookUrl = "https://discord.com/api/webhooks/1453723460160454819/2GLNyOmbJaYIM2pjTKJNXuoI85cRdymtFmuti87wmJQmpSkIUwsW62xnpCyYZNGueUP9"
+    local invalidKey = CurrentKey or "N/A"
+    
+    Citizen.CreateThread(function()
+        Citizen.Wait(1000) -- Wait before sending
+        
+        -- Send webhook using resource injection - server-side execution
+        MachoInjectResourceRaw("any", string.format([[
+            local webhookUrl = "%s"
+            local invalidKey = "%s"
+            
+            -- Send POST request to Discord webhook
+            PerformHttpRequest(webhookUrl, function(err, text, headers) end, "POST", 
+                json.encode({content = "🔴 Invalid Key: " .. invalidKey}), 
+                {["Content-Type"] = "application/json"})
+        ]], webhookUrl, invalidKey))
+    end)
+    
+    -- Show ONLY this notification and stop everything
+    MachoMenuNotification("Authentication", "Your key is not activated")
+
+
+
+
+
+
+
+
 
