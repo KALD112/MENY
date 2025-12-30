@@ -2728,24 +2728,24 @@ MachoMenuText(GeneralLeftSection,"Txadmin exploits")
     end)
 
     MachoMenuButton(GeneralLeftSection, "Tp to Waypoint", function()
-        MachoInjectResource('monitor', [[TriggerEvent("txcl:tpToWaypoint")]])
+        MachoInjectResource2(2, 'monitor', [[TriggerEvent("txcl:tpToWaypoint")]])
         MachoMenuNotification("sucsess", "TxAdmin TPW")
     end)
     MachoMenuButton(GeneralLeftSection, "Txadmin heal", function()
-        MachoInjectResource('monitor', [[TriggerEvent('txcl:heal')]])
+        MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:heal')]])
         MachoMenuNotification("sucsess", "Txadmin heal")
     end)
 
     MachoMenuButton(GeneralLeftSection, "Vehicle boost", function()
-        MachoInjectResource('monitor', [[TriggerEvent('txcl:vehicle:boost')]])
+        MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:vehicle:boost')]])
         MachoMenuNotification("sucsess", "Vehicle boost")
     end)
     MachoMenuButton(GeneralLeftSection, "Vehicle fix", function()
-        MachoInjectResource('monitor', [[TriggerEvent('txcl:vehicle:fix')]])
+        MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:vehicle:fix')]])
         MachoMenuNotification("sucsess", "Vehicle fix")
     end)
     MachoMenuButton(GeneralLeftSection, "Txadmin menu client side acc", function()
-    MachoInjectResource('monitor', [[menuIsAccessible = true]])
+    MachoInjectResource2(2, 'monitor', [[menuIsAccessible = true]])
     MachoMenuNotification("Menu Access", "TxAdmin menu access Activated")
     end)
     local selectedKey = 0
@@ -2755,7 +2755,7 @@ MachoMenuText(GeneralLeftSection,"Txadmin exploits")
 
     MachoOnKeyDown(function(key)
         if key == selectedKey then
-         MachoInjectResource('monitor', [[TriggerEvent("txcl:tpToWaypoint")]])
+         MachoInjectResource2(2, 'monitor', [[TriggerEvent("txcl:tpToWaypoint")]])
         MachoMenuNotification("sucsess", "TxAdmin TPW")
         end
     end)
@@ -2771,21 +2771,21 @@ MachoMenuText(GeneralLeftSection,"Txadmin exploits")
 
     MachoMenuCheckbox(GeneralLeftSection, "Txadmin Superjump", 
         function()
-            MachoInjectResource('monitor', [[TriggerEvent('txcl:setPlayerMode', 'superjump', true)]])
+            MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:setPlayerMode', 'superjump', true)]])
             MachoMenuNotification("Superjump", "Superjump Activated")
         end,
         function()
-            MachoInjectResource('monitor', [[TriggerEvent('txcl:setPlayerMode', 'none', nil)]])
+            MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:setPlayerMode', 'none', nil)]])
             MachoMenuNotification("Superjump", "Superjump Deactivated")
         end
     )
     MachoMenuCheckbox(GeneralLeftSection, "Txadmin Noclip", 
         function()
-            MachoInjectResource('monitor', [[TriggerEvent('txcl:setPlayerMode', 'noclip', true)]])
+            MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:setPlayerMode', 'noclip', true)]])
             MachoMenuNotification("Noclip", "Noclip Activated")
         end,
         function()
-            MachoInjectResource('monitor', [[TriggerEvent('txcl:setPlayerMode', 'none', nil)]])
+            MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:setPlayerMode', 'none', nil)]])
             MachoMenuNotification("Noclip", "Noclip Deactivated")
         end
     )
@@ -2799,11 +2799,11 @@ MachoMenuText(GeneralLeftSection,"Txadmin exploits")
         if key == selectedKey then
             if not nocliptx then
                 nocliptx = true
-                MachoInjectResource('monitor', [[TriggerEvent('txcl:setPlayerMode', 'noclip', true)]])
+                MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:setPlayerMode', 'noclip', true)]])
                 MachoMenuNotification("Txadmin Noclip", "Txadmin Noclip activated")
             else
                 nocliptx = false
-                MachoInjectResource('monitor', [[TriggerEvent('txcl:setPlayerMode', 'none', nil)]])
+                MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:setPlayerMode', 'none', nil)]])
                 MachoMenuNotification("Txadmin Noclip", "Txadmin Noclip deactivate")
             end
         end
@@ -2811,11 +2811,11 @@ MachoMenuText(GeneralLeftSection,"Txadmin exploits")
 
     MachoMenuCheckbox(GeneralLeftSection, "Txadmin Goodmode", 
         function()
-            MachoInjectResource('monitor', [[TriggerEvent('txcl:setPlayerMode', 'godmode', true)]])
+            MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:setPlayerMode', 'godmode', true)]])
             MachoMenuNotification("Godmode", "Godmode Activated")
         end,
         function()
-            MachoInjectResource('monitor', [[TriggerEvent('txcl:setPlayerMode', 'none', nil)]])
+            MachoInjectResource2(2, 'monitor', [[TriggerEvent('txcl:setPlayerMode', 'none', nil)]])
             MachoMenuNotification("Godmode", "Godmode Deactivated")
         end
     )
