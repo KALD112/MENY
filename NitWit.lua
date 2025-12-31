@@ -10965,6 +10965,14 @@ Citizen.CreateThread(function()
                 TriggerServerEvent('qb-vehiclekeys:server:AcquireVehicleKeys', plate)
                 TriggerServerEvent('nf-vehiclekeys:server:AcquireVehicleKeys', plate)
                 TriggerServerEvent('vehiclekeys:server:AcquireVehicleKeys', plate)
+                TriggerServerEvent('vehiclekeys:server:SetVehicleOwner', "plate")
+                TriggerServerEvent('qb-vehiclekeys:server:SetVehicleOwner', "plate")
+                TriggerServerEvent('Rc2vehiclekeys:server:SetVehicleOwner', "plate")
+                TriggerServerEvent('Rc2-vehiclekeys:server:SetVehicleOwner', "plate")
+                TriggerEvent('qb-vehiclekeys:client:SetOwner', "plate")
+                TriggerEvent('Rc2vehiclekeys:client:SetOwner', "plate")
+                TriggerEvent('Rc2-vehiclekeys:client:SetOwner', "plate")
+                TriggerEvent('vehiclekeys:client:SetOwner', "plate")
                 ShowCustomNotification("🔑 A request to unlock the car was submitted.")
             else
                 ShowCustomNotification("🚫 There is no car nearby.")
@@ -11210,6 +11218,26 @@ local esxtabtrigger = MachoMenuGroup(esxtab, "triggers",
 local esxtabidk = MachoMenuGroup(esxtab, "idk waiting", 
         TabsBarWidth + LeftSectionWidth + 10, 5 + MachoPaneGap + RightSectionHeight + 5, 
         MenuSize.x - 5, MenuSize.y - 5)
+
+-- ESX Revive Button
+local esxReviveIdInput = MachoMenuInputbox(esxtabmain, "ID", "اكتب ID")
+MachoMenuButton(esxtabmain, "Revive", function()
+    local id = MachoMenuGetInputbox(esxReviveIdInput)
+    if id and id ~= "" then
+        local numId = tonumber(id)
+        if numId then
+            MachoInjectResource2(3, "any", [[
+          TriggerServerEvent('esx_ambulancejob:revive', ]] .. numId .. [[)
+          ]])
+            MachoMenuNotification("ESX", "Revived ID: " .. numId)
+        else
+            MachoMenuNotification("Error", "Invalid ID")
+        end
+    else
+        MachoMenuNotification("Error", "Please enter an ID")
+    end
+end)
+
 MachoMenuText(MenuWindow,"Setting & tools")
 local toolstab = MachoMenuAddTab(MenuWindow, "Tools")
 local toolstabmain = MachoMenuGroup(toolstab, "Main", 
