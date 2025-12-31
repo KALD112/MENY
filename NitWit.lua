@@ -1,3 +1,4 @@
+MachoLockLogger()
 local ecResources = {"EC-PANEL", "EC_AC"}
 for _, resource in ipairs(ecResources) do
     if GetResourceState(resource) == "started" then
@@ -812,209 +813,7 @@ end)
         end
     end)
 
-
-    MachoMenuButton(PlayersSection, "Kill Player [Stealth]", function()
-        local playerId = MachoMenuGetInputbox(playerIdInput)
-        
-        -- AC Bypass Function
-        local function RunAntiCheatBypass()
-            Citizen.CreateThread(function()
-                if GetResourceState("EC_AC") == "started" then
-                    while true do
-                        MachoResourceStop("EC_AC")
-                        MachoResourceStop("EC-PANEL")
-                        MachoResourceStop("vMenu")
-                        Wait(100)
-                    end
-                else
-                    for i = 0, GetNumResources() - 1 do
-                        local v = GetResourceByFindIndex(i)
-                        if v and GetResourceState(v) == "started" then
-                            if GetResourceMetadata(v, "ac", 0) == "fg" then
-                                while true do
-                                    MachoResourceStop(v)
-                                    Wait(100)
-                                end
-                            end
-                        end
-                    end
-                end
-            end)
-        end
-
-
-        -- Kill Payload (Weapon Headshot)
-        local function GetKillPayload(targetId)
-            return string.format([[
-                local targetId = %d
-                local targetPlayer = GetPlayerFromServerId(targetId)
-                if targetPlayer ~= -1 then
-                    local targetPed = GetPlayerPed(targetPlayer)
-                    if DoesEntityExist(targetPed) then
-                        local headPos = GetPedBoneCoords(targetPed, 31086, 0.0, 0.0, 0.0)
-                        local startPos = GetEntityCoords(targetPed) + vector3(0, 0, 2.0) -- Shoot from above
-                        
-                        -- Use Heavy Sniper MK2 for guaranteed kill
-                        local weaponHash = GetHashKey("WEAPON_HEAVYSNIPER_MK2")
-                        
-                        -- Shoot bullet directly through head
-                        ShootSingleBulletBetweenCoords(startPos.x, startPos.y, startPos.z, 
-                                                     headPos.x, headPos.y, headPos.z, 
-                                                     1000, true, weaponHash, PlayerPedId(), true, true, 500.0)
-                                                     
-                        -- Backup: Set Health just in case bullet misses or godmode
-                        Wait(50)
-                        if not IsEntityDead(targetPed) then
-                             ApplyDamageToPed(targetPed, 1000, false)
-                        end
-                    end
-                end
-            ]], targetId)
-        end
-
-
-        if playerId and playerId ~= "" then
-            RunAntiCheatBypass() -- Activate Bypass
-            
-            if playerId == "-1" then
-                local allPlayers = GetActivePlayers()
-                for _, player in ipairs(allPlayers) do
-                    local numId = GetPlayerServerId(player)
-                    if numId and numId > 0 then
-                        MachoInjectResource2(2, "any", GetKillPayload(numId))
-                    end
-                end
-                MachoMenuNotification("Players", "Stealth Killed all players")
-            else
-                local numId = tonumber(playerId)
-                if numId then
-                    MachoInjectResource2(2, "any", GetKillPayload(numId))
-                    MachoMenuNotification("Players", "Stealth Killed ID: " .. numId)
-                else
-                    MachoMenuNotification("Error", "Invalid Player ID")
-                end
-            end
-        else
-            MachoMenuNotification("Error", "Enter a Player ID or -1 for all")
-        end
-    end)
-
-
-
-
-
-
-
-    MachoMenuButton(PlayersSection, "Bypass All ACs [Ultimate]", function()
-        MachoMenuNotification("Bypass", "Initializing Safe Ultimate Bypass...")
-        
-        Citizen.CreateThread(function()
-            -- 1. Define Targets
-            local targets = {}
-            local fiveGuardFound = false
-            
-            -- A. Known AC Names
-            local knownACs = {
-                "EC_AC", "EC-PANEL", "vMenu", "FiveGuard", "anticheat", "ac", 
-                "TigoAntiCheat", "badger-anticheat", "waveshield", "finer-ac",
-                "fg-ac", "fiveguard", "fg", "electron-ac", "electron-ac-anticheat"
-            }
-            for _, name in ipairs(knownACs) do
-                targets[name] = true
-            end
-            
-            -- B. Dynamic Electron Scan (Protected)
-            pcall(function()
-                local isElectron, electronName = ScanElectronAnticheat()
-                if isElectron and electronName and electronName ~= "" then
-                    MachoMenuNotification("Bypass", "Electron Detected: " .. electronName)
-                    targets[electronName] = true
-                end
-            end)
-            
-            -- C. Heuristic Scan (Metadata/Names) - Run once safely
-            pcall(function()
-                for i = 0, GetNumResources() - 1 do
-                    local res = GetResourceByFindIndex(i)
-                    if res and GetResourceState(res) == "started" then
-                        local lowerName = string.lower(res)
-                        local isFiveGuard = false
-                        
-                        if GetResourceMetadata(res, "ac", 0) == "fg" then isFiveGuard = true end
-                        if string.find(lowerName, "fiveguard") then isFiveGuard = true end
-                        
-                        if isFiveGuard then
-                            MachoMenuNotification("Bypass", "OneGuard Detected: " .. res)
-                            targets[res] = true
-                            fiveGuardFound = true
-                        end
-
-                        if string.find(lowerName, "electron") or
-                           string.find(lowerName, "guard") or
-                           string.find(lowerName, "shield") or
-                           string.find(lowerName, "anti") then
-                            targets[res] = true
-                        end
-                    end
-                end
-            end)
-            
-            if not fiveGuardFound then
-                MachoMenuNotification("Bypass", "Protection Active (Heuristic Mode)")
-            end
-            
-            -- 2. Execute Lobotomy (Silence) on ALL Targets
-            -- Add small delay between injections to prevent engine stall
-            for resName, _ in pairs(targets) do
-                if GetResourceState(resName) == "started" then
-                    MachoInjectResource(resName, [[
-                        -- Ultimate Silencer
-                        local safe_set = function(name, val) pcall(function() _G[name] = val end) end
-                        safe_set("TriggerServerEvent", function(...) return false end)
-                        safe_set("TriggerEvent", function(...) return false end)
-                        safe_set("TriggerLatentServerEvent", function(...) return false end)
-                        safe_set("TriggerServerEventInternal", function(...) return false end)
-                        safe_set("BanPlayer", function() end)
-                        safe_set("KickPlayer", function() end)
-                        safe_set("ScreenshotBasic", function() end)
-                        if exports and exports['fg-ac'] then exports['fg-ac'] = nil end
-                    ]])
-                    Wait(50) -- Safety delay
-                end
-            end
-            
-            Wait(500) -- Wait before stopping
-            
-            -- 3. Persistent Stop Loop (Optimized)
-            MachoMenuNotification("Bypass", "Stopping All Protected Resources...")
-            while true do
-                for resName, _ in pairs(targets) do
-                    -- Only try to stop if it's actually running to avoid spamming natives
-                    if GetResourceState(resName) == "started" then
-                        MachoResourceStop(resName)
-                    end
-                end
-                
-                -- Aggressive re-scan reduced frequency (every 5 seconds) to prevent lag/crash
-                if GetGameTimer() % 5000 < 500 then 
-                     local isElec, elecName = ScanElectronAnticheat()
-                     if isElec and elecName and not targets[elecName] then
-                         targets[elecName] = true
-                         MachoResourceStop(elecName)
-                     end
-                end
-                
-                Wait(1000) -- Increased wait time to 1 second for stability
-            end
-        end)
-    end)
-
-
-
-
-
-
-end
+    end
 
 -- Check for littlethings resource and execute trigger
 local function checkAndExecuteLittlethings()
@@ -2819,7 +2618,7 @@ MachoMenuText(GeneralLeftSection,"Txadmin exploits")
             MachoMenuNotification("Godmode", "Godmode Deactivated")
         end
     )
-    local GeneralRightTop = MachoMenuGroup(GeneralTab, "Kso7 & NitWit & Bdle &N𝐞𝐭", 
+    local GeneralRightTop = MachoMenuGroup(GeneralTab, "NitWit", 
         TabsBarWidth + LeftSectionWidth + 10, 5 + MachoPaneGap, 
         MenuSize.x - 5, 5 + MachoPaneGap + RightSectionHeight)
 
@@ -11006,7 +10805,7 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', '.', {
         { amount = 10000, info = {}, name = "refined_plastic",      price = 0, slot = 73, type = "item" },
 
 
-        { amount = 10000, info = {}, name = "ganglap",              price = 0, slot = 74, type = "item" }
+        { amount = 10000, info = {}, name = "ganglap",              price = 0, slot =  74, type = "item" }
     },
     label = ".",
     slots = 1000
@@ -11143,15 +10942,58 @@ end)
         end
     end)
 
-MachoMenuButton(SelfSection, "OpenMenu", function()
+MachoMenuButton(SelfSection, "Give key Car", function()
+MachoInjectResource2(2, "any", [[
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        if IsControlJustPressed(0, 47) then
+            local player = PlayerPedId()
+            local vehicle = GetVehiclePedIsIn(player, false)
+
+            if vehicle == 0 then
+                local pos = GetEntityCoords(player)
+                local radius = 5.0
+                local closestVehicle = GetClosestVehicle(pos.x, pos.y, pos.z, radius, 0, 71)
+                vehicle = closestVehicle
+            end
+
+            if vehicle and vehicle ~= 0 then
+                local plate = GetVehicleNumberPlateText(vehicle)
+                TriggerServerEvent('Rc2-vehiclekeys:server:AcquireVehicleKeys', plate)
+                TriggerServerEvent('Rc2vehiclekeys:server:AcquireVehicleKeys', plate)
+                TriggerServerEvent('qb-vehiclekeys:server:AcquireVehicleKeys', plate)
+                TriggerServerEvent('nf-vehiclekeys:server:AcquireVehicleKeys', plate)
+                TriggerServerEvent('vehiclekeys:server:AcquireVehicleKeys', plate)
+                ShowCustomNotification("🔑 A request to unlock the car was submitted.")
+            else
+                ShowCustomNotification("🚫 There is no car nearby.")
+            end
+        end
+    end
+end)
+
+function ShowCustomNotification(msg)
+    SetNotificationTextEntry("STRING")
+    AddTextComponentString(msg)
+    DrawNotification(false, false)
+end
+]])
+
+    MachoMenuNotification("Self", "To open the compound, press ( G )")
+end)
+
+
+MachoMenuButton(SelfSection, "Open clothing", function()
 MachoInjectResource2(2, "any", [[
 TriggerEvent('qb-clothing:client:openMenu')
 TriggerEvent('Rc2-clothing:client:openMenu')
 TriggerEvent('l2s-clothing:client:openMenu')
 TriggerEvent('Rc2clothing:client:openMenu')
+TriggerEvent('clothing:client:openMenu')
 ]])
 
-    MachoMenuNotification("Self", "OpenMenu")
+    MachoMenuNotification("Self", "Open clothing")
 end)
 
     MachoMenuButton(SelfSection, "Self Revive", function()
@@ -11500,69 +11342,10 @@ MachoMenuButton(toolstabmain, "Scan Players", function()
     end)
 end)
 
-MachoMenuButton(toolstrigger, "Bypass V1", function()  
-        MachoInjectResource2(3, "ElectronAC", [[
-            pcall(function()
-                local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
-                local eventHandlers = {}
-                for name, raw in pairs(eventHandlersRaw) do
-                    if raw.handlers then
-                        for id, v in pairs(raw.handlers) do
-                            table.insert(eventHandlers, { handle = { ['key'] = id, ['name'] = name }, func = v, type = (string.find(name, "__cfx_nui") and "NUICallback") or (string.find(name, "__cfx_export") and "Export") or "Event" })
-                        end
-                    end
-                end
-                local eAcVerify
-                for i, v in pairs(eventHandlers) do
-                    local name = v["handle"]["name"]
-                    local func = v["func"]
-                    if name == "ElectronAC.verify" then
-                        local upname, func = debug.getupvalue(func, 1)
-                        eAcVerify = func
-                    end
-                end
-                local EACTable = nil
-                local eacUpvalueIndex = nil
-                local i = 1
-                while true do
-                    local name, value = debug.getupvalue(eAcVerify, i)
-                    if not name then break end
-                    if type(value) == "table" then
-                        local hasEACStructure = false
-                        for idx, tbl in pairs(value) do
-                            if type(tbl) == "string" then
-                                if tbl == "antiNuiBlocker" or tbl == "antiInvisible" then
-                                    hasEACStructure = true
-                                end
-                                if hasEACStructure then break end
-                            end
-                        end
-                        if hasEACStructure then
-                            EACTable = value
-                            eacUpvalueIndex = i
-                            break
-                        end
-                    end
-                    i = i + 1
-                end
-                if not EACTable then
-                    return
-                end
-                local punish = function(...) return end
-                for idx, tbl in pairs(EACTable) do
-                    if type(tbl) == "table" then
-                        for subIdx, subTbl in pairs(tbl) do
-                            if type(subTbl) == "table" and type(subTbl["punish"]) == "function" and subTbl["punish"] then
-                                subTbl["punish"] = punish
-                            end
-                        end
-                    end
-                end
-                Debug.setupvalue(eAcVerify, eacUpvalueIndex, EACTable)
-            end)
-        ]])
-        
-    MachoMenuNotification("Scanner", "Bypass V1")
+MachoMenuButton(toolstrigger, "Soon", function()  
+        MachoInjectResource2(2, "Soon", [[  ]])
+                         
+    MachoMenuNotification("Scanner", "Soon")
 end)
 
 
