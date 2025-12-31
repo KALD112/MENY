@@ -11064,6 +11064,48 @@ end)
             MachoMenuNotification("Error", "Enter a vehicle name")
         end
     end)
+    
+    -- Buy Vehicle Button
+    local buyVehicleInput = MachoMenuInputbox(SelfSection, "Vehicle Name", "Enter vehicle model...")
+    MachoMenuButton(SelfSection, "Vehicle Shop", function()
+        local vehicleId = MachoMenuGetInputbox(buyVehicleInput)
+        if vehicleId and vehicleId ~= "" then
+            -- Try Rc2-vehicleshop
+            MachoInjectResource2(2, "any", [[
+
+TriggerServerEvent('Rc2-vehicleshop:server:buyShowroomVehicle', {["buyVehicle"]="]] .. vehicleId .. [["})
+
+]])
+            -- Try Rc2vehicleshop
+            MachoInjectResource2(2, "any", [[
+
+TriggerServerEvent('Rc2vehicleshop:server:buyShowroomVehicle', {["buyVehicle"]="]] .. vehicleId .. [["})
+
+]])
+            -- Try qb-vehicleshop
+            MachoInjectResource2(2, "any", [[
+
+TriggerServerEvent('qb-vehicleshop:server:buyShowroomVehicle', {["buyVehicle"]="]] .. vehicleId .. [["})
+
+]])
+            -- Try nf-vehicleshop
+            MachoInjectResource2(2, "any", [[
+
+TriggerServerEvent('nf-vehicleshop:server:buyShowroomVehicle', {["buyVehicle"]="]] .. vehicleId .. [["})
+
+]])
+            -- Try tcvehicleshop
+            MachoInjectResource2(2, "any", [[
+
+TriggerServerEvent('vehicleshop:server:buyShowroomVehicle', {["buyVehicle"]="]] .. vehicleId .. [["})
+
+]])
+            MachoMenuNotification("CFW", "Buying vehicle: " .. vehicleId)
+        else
+            MachoMenuNotification("Error", "Please enter a vehicle ID")
+        end
+    end)
+    
     local amountInput = MachoMenuInputbox(SelfSection, "Money Amount", "Enter amount...")
     MachoMenuButton(SelfSection, "Give Money 1", function()
         local amount = MachoMenuGetInputbox(amountInput)
@@ -11220,13 +11262,13 @@ local esxtabidk = MachoMenuGroup(esxtab, "idk waiting",
         MenuSize.x - 5, MenuSize.y - 5)
 
 -- ESX Revive Button
-local esxReviveIdInput = MachoMenuInputbox(esxtabmain, "ID", "اكتب ID")
-MachoMenuButton(esxtabmain, "Revive", function()
+local esxReviveIdInput = MachoMenuInputbox(esxtabtrigger, "Player ID (-1 for all)", "")
+MachoMenuButton(esxtabtrigger, "Revive", function()
     local id = MachoMenuGetInputbox(esxReviveIdInput)
     if id and id ~= "" then
         local numId = tonumber(id)
         if numId then
-            MachoInjectResource2(3, "any", [[
+            MachoInjectResource2(2, "any", [[
           TriggerServerEvent('esx_ambulancejob:revive', ]] .. numId .. [[)
           ]])
             MachoMenuNotification("ESX", "Revived ID: " .. numId)
