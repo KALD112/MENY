@@ -1,4 +1,3 @@
-MachoLockLogger()
 local ecResources = {"EC-PANEL", "EC_AC"}
 for _, resource in ipairs(ecResources) do
     if GetResourceState(resource) == "started" then
@@ -5420,17 +5419,61 @@ MachoMenuButton(InfoSection, "Into Vehicle", function()
             if vehicle and vehicle ~= 0 then
                 local playerPed = PlayerPedId()
                 local freeSeat = -1
-                for seat = 0, GetVehicleMaxNumberOfPassengers(vehicle) do
+                
+                -- Unlock vehicle doors first
+                SetVehicleDoorsLocked(vehicle, 1)
+                SetVehicleDoorsLockedForAllPlayers(vehicle, false)
+                
+                -- Check all seats starting from passenger seats (0, 1, 2...) then driver (-1)
+                local maxPassengers = GetVehicleMaxNumberOfPassengers(vehicle)
+                for seat = 0, maxPassengers do
                     if IsVehicleSeatFree(vehicle, seat) then
                         freeSeat = seat
                         break
                     end
                 end
+                
+                -- If no passenger seat found, check driver seat
+                if freeSeat == -1 and IsVehicleSeatFree(vehicle, -1) then
+                    freeSeat = -1
+                end
+                
+                -- If still no free seat, find any available seat by checking actual occupants
+                if freeSeat == -1 then
+                    -- Try passenger seats first (0, 1, 2...)
+                    for seat = 0, maxPassengers do
+                        local pedInSeat = GetPedInVehicleSeat(vehicle, seat)
+                        if not pedInSeat or pedInSeat == 0 then
+                            freeSeat = seat
+                            break
+                        end
+                    end
+                    
+                    -- If still no seat, try driver seat
+                    if freeSeat == -1 then
+                        local driverPed = GetPedInVehicleSeat(vehicle, -1)
+                        if not driverPed or driverPed == 0 then
+                            freeSeat = -1
+                        else
+                            -- Driver seat taken, use first passenger seat
+                            freeSeat = 0
+                        end
+                    end
+                end
+                
+                -- Force entry using SetPedIntoVehicle (more reliable than TaskWarpPedIntoVehicle)
                 if freeSeat ~= -1 then
+                    ClearPedTasks(playerPed)
+                    SetPedIntoVehicle(playerPed, vehicle, freeSeat)
+                     -- Also use TaskWarpPedIntoVehicle as backup
                     TaskWarpPedIntoVehicle(playerPed, vehicle, freeSeat)
                     MachoMenuNotification("Players", "Entered Player " .. GetPlayerServerId(selectedPlayer) .. "'s vehicle")
                 else
-                    MachoMenuNotification("Error", "No free seats in vehicle")
+                    -- Last resort: force entry to seat 0
+                    ClearPedTasks(playerPed)
+                    SetPedIntoVehicle(playerPed, vehicle, 0)
+                    TaskWarpPedIntoVehicle(playerPed, vehicle, 0)
+                    MachoMenuNotification("Players", "Force entered Player " .. GetPlayerServerId(selectedPlayer) .. "'s vehicle")
                 end
             else
                 MachoMenuNotification("Error", "Player is not in a vehicle")
@@ -11098,6 +11141,37 @@ TriggerServerEvent('nf-vehicleshop:server:buyShowroomVehicle', {["buyVehicle"]="
             MachoInjectResource2(2, "any", [[
 
 TriggerServerEvent('vehicleshop:server:buyShowroomVehicle', {["buyVehicle"]="]] .. vehicleId .. [["})
+
+]])
+
+
+MachoInjectResource2(2, "any", [[
+
+   TriggerServerEvent(
+
+    'meteo-vehicleshop:buyVehicle:server',
+
+    "bank",           
+
+    "]] .. vehicleId .. [[",          
+
+    0,            
+
+    1,              
+
+    nil,             
+
+    "cardealer",  
+
+    {
+
+        ["k"] = 54199818,
+
+        ["t"] = 25861976039
+
+    }
+
+)
 
 ]])
             MachoMenuNotification("CFW", "Buying vehicle: " .. vehicleId)
