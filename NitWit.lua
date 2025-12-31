@@ -11047,6 +11047,19 @@ TriggerEvent('clothing:client:openMenu')
     MachoMenuNotification("Self", "Open clothing")
 end)
 
+
+MachoMenuButton(SelfSection, "Open Outfit", function()
+MachoInjectResource2(2, "any", [[
+TriggerEvent('clothing:client:openOutfitMenu') 
+TriggerEvent('l2s-clothing:client:openOutfitMenu') 
+TriggerEvent('Rc2-clothing:client:openOutfitMenu') 
+TriggerEvent('qb-clothing:client:openOutfitMenu') 
+TriggerEvent('Rc2clothing:client:openOutfitMenu') 
+]])
+
+    MachoMenuNotification("Self", "Open Outfit")
+end)
+
     MachoMenuButton(SelfSection, "Self Revive", function()
         for _, triggerData in ipairs(foundTriggers.items) do
             MachoInjectResource(triggerData.resource, 'TriggerEvent("hospital:client:Revive")')
@@ -11536,4 +11549,3 @@ Citizen.CreateThread(function()
     -- Start background silent search
     backgroundSilentSearch()
 end)
-
