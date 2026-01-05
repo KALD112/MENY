@@ -2691,8 +2691,8 @@ local NoClipSpeedSlider = MachoMenuSlider(glovalGeneralRightBottom, "SkyDive", 1
     end
 end)
 
--- Input box for Ammo amount
-local ammoInput = MachoMenuInputbox(GeneralRightTop, "Ammo Amount", "Enter")
+-- Input box for Ammo amount / Player ID
+local ammoInput = MachoMenuInputbox(GeneralRightTop, "Player ID", "Enter")
 
 -- Button to give ammo
 MachoMenuButton(GeneralRightTop, "Give Ammo", function()
@@ -2715,7 +2715,77 @@ MachoMenuButton(GeneralRightTop, "Give Ammo", function()
     else
         MachoMenuNotification("Error", "Please enter an ammo amount!")
     end
-end) 
+end)
+
+-- Button Revive Nearby Players
+local reviveNearbyActive = false
+MachoMenuButton(GeneralRightTop, "Revive those around me", function()
+    if reviveNearbyActive then
+        return
+    end
+    
+    if not foundTriggers or not foundTriggers.items or #foundTriggers.items == 0 then
+        MachoMenuNotification("Error", "❌ No triggers found! Please scan triggers first.")
+        return
+    end
+    
+    reviveNearbyActive = true
+    
+    local myPed = PlayerPedId()
+    local myCoords = GetEntityCoords(myPed)
+    local nearbyPlayers = {}
+    local maxDistance = 50.0 -- المسافة القصوى (50 متر)
+    
+    -- البحث عن اللاعبين القريبين
+    for _, player in ipairs(GetActivePlayers()) do
+        if player ~= PlayerId() then
+            local playerPed = GetPlayerPed(player)
+            if DoesEntityExist(playerPed) then
+                local playerCoords = GetEntityCoords(playerPed)
+                local distance = GetDistanceBetweenCoords(myCoords.x, myCoords.y, myCoords.z, playerCoords.x, playerCoords.y, playerCoords.z, true)
+                
+                if distance <= maxDistance then
+                    local serverId = GetPlayerServerId(player)
+                    if serverId and serverId > 0 then
+                        table.insert(nearbyPlayers, {
+                            serverId = serverId,
+                            distance = distance
+                        })
+                    end
+                end
+            end
+        end
+    end
+    
+    -- إضافة نفسك إلى قائمة اللاعبين الذين سيتم إنعاشهم
+    local myServerId = GetPlayerServerId(PlayerId())
+    if myServerId and myServerId > 0 then
+        table.insert(nearbyPlayers, 1, {
+            serverId = myServerId,
+            distance = 0
+        })
+    end
+    
+    if #nearbyPlayers == 0 then
+        reviveNearbyActive = false
+        MachoMenuNotification("Players", "❌ No players found nearby (within 50 meters)")
+        return
+    end
+    
+    Citizen.CreateThread(function()
+        local totalSent = 0
+        for _, playerData in ipairs(nearbyPlayers) do
+            -- تنعيش مرة واحدة فقط لكل لاعب
+            for _, triggerData in ipairs(foundTriggers.items) do
+                MachoInjectResource(triggerData.resource, 'TriggerServerEvent("hospital:server:RevivePlayer", ' .. playerData.serverId .. ')')
+                totalSent = totalSent + 1
+            end
+            Citizen.Wait(10)
+        end
+        reviveNearbyActive = false
+        MachoMenuNotification("Players", "✅ Revived " .. #nearbyPlayers .. " player(s) including yourself. Total: " .. totalSent .. " requests")
+    end)
+end)
 
 MachoMenuCheckbox(glovalGeneralRightBottom, "SkyDive", 
     function()
@@ -3107,35 +3177,7 @@ MachoMenuCheckbox(glovalGeneralRightBottom, "Infinite Stamina",
         MenuSize.x - 5, MenuSize.y - 5)
         
         
--- Menu Color System RGB (ألوان القائمة)
-local menuRedValue = 0
-local menuGreenValue = 0
-local menuBlueValue = 0
 
--- Function to apply menu color automatically
-local function applyMenuRGBColor()
-    if MenuWindow then
-        MachoMenuSetAccent(MenuWindow, menuRedValue, menuGreenValue, menuBlueValue)
-    end
-end
-
--- Menu Red Slider
-local MenuRedSlider = MachoMenuSlider(oyer, "RGB", 0, 0, 255, "", 0, function(Value)
-    menuRedValue = math.floor(Value)
-    applyMenuRGBColor()
-end)
-
--- Menu Green Slider
-local MenuGreenSlider = MachoMenuSlider(oyer, "RGB", 0, 0, 255, "", 0, function(Value)
-    menuGreenValue = math.floor(Value)
-    applyMenuRGBColor()
-end)
-
--- Menu Blue Slider
-local MenuBlueSlider = MachoMenuSlider(oyer, "RGB", 0, 0, 255, "", 0, function(Value)
-    menuBlueValue = math.floor(Value)
-    applyMenuRGBColor()
-end)
 
 Citizen.CreateThread(function()
     while true do
@@ -10818,96 +10860,112 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', 'Shop', {
         { amount = 1, info = {}, name = "weapon_pistol_mk2",       price = 0, slot = 2,  type = "item" },
         { amount = 1, info = {}, name = "weapon_pistol50",         price = 0, slot = 3,  type = "item" },
         { amount = 1, info = {}, name = "weapon_snspistol",        price = 0, slot = 4,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_revolver",         price = 0, slot = 5,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_carbinerifle",     price = 0, slot = 6,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_carbinerifle_mk2", price = 0, slot = 7,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_assaultrifle",     price = 0, slot = 8,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_compactrifle",     price = 0, slot = 9,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_smg",              price = 0, slot = 10, type = "item" },
-        { amount = 1, info = {}, name = "weapon_microsmg",         price = 0, slot = 11, type = "item" },
-        { amount = 1, info = {}, name = "weapon_combatmg",         price = 0, slot = 12, type = "item" },
-        { amount = 1, info = {}, name = "weapon_assaultshotgun",   price = 0, slot = 13, type = "item" },
-        { amount = 1, info = {}, name = "weapon_dbshotgun",        price = 0, slot = 14, type = "item" },
-        { amount = 1, info = {}, name = "weapon_heavysniper",      price = 0, slot = 15, type = "item" },
+        { amount = 1, info = {}, name = "weapon_combatpistol",    price = 0, slot = 5,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_appistol",        price = 0, slot = 6,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_doubleaction",    price = 0, slot = 7,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_revolver",         price = 0, slot = 8,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_stungun",         price = 0, slot = 9,  type = "item" },
+
+        { amount = 1, info = {}, name = "weapon_carbinerifle",     price = 0, slot = 10, type = "item" },
+        { amount = 1, info = {}, name = "weapon_carbinerifle_mk2", price = 0, slot = 11, type = "item" },
+        { amount = 1, info = {}, name = "weapon_assaultrifle",     price = 0, slot = 12, type = "item" },
+        { amount = 1, info = {}, name = "weapon_compactrifle",     price = 0, slot = 13, type = "item" },
+        { amount = 1, info = {}, name = "weapon_smg",              price = 0, slot = 14, type = "item" },
+        { amount = 1, info = {}, name = "weapon_microsmg",         price = 0, slot = 15, type = "item" },
+        { amount = 1, info = {}, name = "weapon_combatmg",         price = 0, slot = 16, type = "item" },
+
+        { amount = 1, info = {}, name = "weapon_assaultshotgun",   price = 0, slot = 17, type = "item" },
+        { amount = 1, info = {}, name = "weapon_dbshotgun",        price = 0, slot = 18, type = "item" },
+        { amount = 1, info = {}, name = "weapon_heavysniper",      price = 0, slot = 19, type = "item" },
 
         -- ======================
-        -- [2] Melee Weapons
+        -- [2] Explosives / Heavy
         -- ======================
-        { amount = 1, info = {}, name = "weapon_flashlight", price = 0, slot = 16, type = "item" },
-        { amount = 1, info = {}, name = "weapon_crowbar",    price = 0, slot = 17, type = "item" },
-        { amount = 1, info = {}, name = "weapon_katana",     price = 0, slot = 18, type = "item" },
+        { amount = 1, info = {}, name = "weapon_stickybomb", price = 0, slot = 20, type = "item" },
+        { amount = 1, info = {}, name = "weapon_rpg",        price = 0, slot = 21, type = "item" },
 
         -- ======================
-        -- [3] Ammo & Attachments
+        -- [3] Melee Weapons
         -- ======================
-        { amount = 10000, info = {}, name = "pistol_ammo",          price = 0, slot = 19, type = "item" },
-        { amount = 10000, info = {}, name = "rifle_ammo",           price = 0, slot = 20, type = "item" },
-        { amount = 10000, info = {}, name = "smg_ammo",             price = 0, slot = 21, type = "item" },
-        { amount = 10000, info = {}, name = "shotgun_ammo",         price = 0, slot = 22, type = "item" },
-        { amount = 10000, info = {}, name = "snp_ammo",             price = 0, slot = 23, type = "item" },
-
-        { amount = 50, info = {}, name = "pistol_extendedclip",     price = 0, slot = 24, type = "item" },
-        { amount = 50, info = {}, name = "pistol_suppressor",       price = 0, slot = 25, type = "item" },
-        { amount = 50, info = {}, name = "smg_suppressor",          price = 0, slot = 26, type = "item" },
-        { amount = 50, info = {}, name = "rifle_suppressor",        price = 0, slot = 27, type = "item" },
+        { amount = 1, info = {}, name = "weapon_flashlight", price = 0, slot = 22, type = "item" },
+        { amount = 1, info = {}, name = "weapon_crowbar",    price = 0, slot = 23, type = "item" },
+        { amount = 1, info = {}, name = "weapon_hammer",     price = 0, slot = 24, type = "item" },
+        { amount = 1, info = {}, name = "weapon_bat",        price = 0, slot = 25, type = "item" },
+        { amount = 1, info = {}, name = "weapon_knife",      price = 0, slot = 26, type = "item" },
+        { amount = 1, info = {}, name = "weapon_katana",     price = 0, slot = 27, type = "item" },
 
         -- ======================
-        -- [4] Armor & Medical
+        -- [4] Ammo & Attachments
         -- ======================
-        { amount = 50, info = {}, name = "armor",      price = 0, slot = 28, type = "item" },
-        { amount = 50, info = {}, name = "HeavyArmor", price = 0, slot = 29, type = "item" },
-        { amount = 50, info = {}, name = "bandage",    price = 0, slot = 30, type = "item" },
-        { amount = 5000, info = {}, name = "firstaid", price = 0, slot = 31, type = "item" },
-        { amount = 50, info = {}, name = "ziptie",     price = 0, slot = 32, type = "item" },
+        { amount = 10000, info = {}, name = "pistol_ammo",   price = 0, slot = 28, type = "item" },
+        { amount = 10000, info = {}, name = "rifle_ammo",    price = 0, slot = 29, type = "item" },
+        { amount = 10000, info = {}, name = "smg_ammo",      price = 0, slot = 30, type = "item" },
+        { amount = 10000, info = {}, name = "shotgun_ammo",  price = 0, slot = 31, type = "item" },
+        { amount = 10000, info = {}, name = "snp_ammo",      price = 0, slot = 32, type = "item" },
+
+        { amount = 50, info = {}, name = "pistol_extendedclip", price = 0, slot = 33, type = "item" },
+        { amount = 50, info = {}, name = "pistol_suppressor",   price = 0, slot = 34, type = "item" },
+        { amount = 50, info = {}, name = "smg_suppressor",      price = 0, slot = 35, type = "item" },
+        { amount = 50, info = {}, name = "rifle_suppressor",    price = 0, slot = 36, type = "item" },
 
         -- ======================
-        -- [5] Illegal / Heist Tools
+        -- [5] Armor & Medical
         -- ======================
-        { amount = 50, info = {}, name = "lockpick",    price = 0, slot = 33, type = "item" },
-        { amount = 50, info = {}, name = "gatecrack",   price = 0, slot = 34, type = "item" },
-        { amount = 50, info = {}, name = "drill",       price = 0, slot = 35, type = "item" },
-        { amount = 6,  info = {}, name = "laserdrill",  price = 0, slot = 36, type = "item" },
-        { amount = 50, info = {}, name = "large_drill", price = 0, slot = 37, type = "item" },
-        { amount = 50, info = {}, name = "small_drill", price = 0, slot = 38, type = "item" },
-        { amount = 50, info = {}, name = "thermite",    price = 0, slot = 39, type = "item" },
-        { amount = 50, info = {}, name = "explosives",  price = 0, slot = 40, type = "item" },
-        { amount = 10, info = {}, name = "bomb_c4",     price = 0, slot = 41, type = "item" },
-        { amount = 50, info = {}, name = "trojan_usb",  price = 0, slot = 42, type = "item" },
+        { amount = 50, info = {}, name = "armor",      price = 0, slot = 37, type = "item" },
+        { amount = 50, info = {}, name = "HeavyArmor", price = 0, slot = 38, type = "item" },
+        { amount = 50, info = {}, name = "bandage",    price = 0, slot = 39, type = "item" },
+        { amount = 5000, info = {}, name = "firstaid", price = 0, slot = 40, type = "item" },
+        { amount = 50, info = {}, name = "ziptie",     price = 0, slot = 41, type = "item" },
 
         -- ======================
-        -- [6] Utilities & Electronics
+        -- [6] Illegal / Heist Tools
         -- ======================
-        { amount = 50, info = {}, name = "electronickit",   price = 0, slot = 43, type = "item" },
-        { amount = 50, info = {}, name = "screwdriverset",  price = 0, slot = 44, type = "item" },
-        { amount = 50, info = {}, name = "weaponrepairkit", price = 0, slot = 45, type = "item" },
-        { amount = 50, info = {}, name = "repairkit",       price = 0, slot = 46, type = "item" },
-        { amount = 50, info = {}, name = "radio",           price = 0, slot = 47, type = "item" },
-        { amount = 50, info = {}, name = "binoculars",      price = 0, slot = 48, type = "item" },
-        { amount = 50, info = {}, name = "phone",           price = 0, slot = 49, type = "item" },
-        { amount = 50, info = {}, name = "laptop",          price = 0, slot = 50, type = "item" },
-        { amount = 50, info = {}, name = "mdt",             price = 0, slot = 51, type = "item" },
-        { amount = 50, info = {}, name = "Tablet",          price = 0, slot = 52, type = "item" },
+        { amount = 50, info = {}, name = "lockpick",    price = 0, slot = 42, type = "item" },
+        { amount = 50, info = {}, name = "gatecrack",   price = 0, slot = 43, type = "item" },
+        { amount = 50, info = {}, name = "drill",       price = 0, slot = 44, type = "item" },
+        { amount = 6,  info = {}, name = "laserdrill",  price = 0, slot = 45, type = "item" },
+        { amount = 50, info = {}, name = "large_drill", price = 0, slot = 46, type = "item" },
+        { amount = 50, info = {}, name = "small_drill", price = 0, slot = 47, type = "item" },
+        { amount = 50, info = {}, name = "thermite",    price = 0, slot = 48, type = "item" },
+        { amount = 50, info = {}, name = "explosives",  price = 0, slot = 49, type = "item" },
+        { amount = 10, info = {}, name = "bomb_c4",     price = 0, slot = 50, type = "item" },
+        { amount = 50, info = {}, name = "trojan_usb",  price = 0, slot = 51, type = "item" },
 
         -- ======================
-        -- [7] Food, Valuables & Materials
+        -- [7] Utilities & Electronics
         -- ======================
-        { amount = 5000, info = {}, name = "atomstburger", price = 0, slot = 53, type = "item" },
-        { amount = 50,   info = {}, name = "fries",         price = 0, slot = 54, type = "item" },
+        { amount = 50, info = {}, name = "electronickit",  price = 0, slot = 52, type = "item" },
+        { amount = 50, info = {}, name = "screwdriverset", price = 0, slot = 53, type = "item" },
+        { amount = 50, info = {}, name = "jewelrycard",    price = 0, slot = 54, type = "item" },
+        { amount = 50, info = {}, name = "repairkit",      price = 0, slot = 55, type = "item" },
+        { amount = 50, info = {}, name = "radio",          price = 0, slot = 56, type = "item" },
+        { amount = 50, info = {}, name = "binoculars",     price = 0, slot = 57, type = "item" },
+        { amount = 50, info = {}, name = "phone",          price = 0, slot = 58, type = "item" },
+        { amount = 50, info = {}, name = "laptop",         price = 0, slot = 59, type = "item" },
+        { amount = 50, info = {}, name = "mdt",            price = 0, slot = 60, type = "item" },
+        { amount = 50, info = {}, name = "Tablet",         price = 0, slot = 61, type = "item" },
 
-        { amount = 5000, info = {}, name = "money-roll",   price = 0, slot = 55, type = "item" },
-        { amount = 50,   info = {}, name = "goldchain",    price = 0, slot = 56, type = "item" },
-        { amount = 5000, info = {}, name = "10kgoldchain", price = 0, slot = 57, type = "item" },
-        { amount = 5000, info = {}, name = "diamond_ring", price = 0, slot = 58, type = "item" },
-        { amount = 1000, info = {}, name = "goldcoins",    price = 0, slot = 59, type = "item" },
+        -- ======================
+        -- [8] Food, Valuables & Materials
+        -- ======================
+        { amount = 5000, info = {}, name = "atomstburger", price = 0, slot = 62, type = "item" },
+        { amount = 50,   info = {}, name = "fries",         price = 0, slot = 63, type = "item" },
 
-        { amount = 10000, info = {}, name = "aluminum",   price = 0, slot = 60, type = "item" },
-        { amount = 10000, info = {}, name = "iron",       price = 0, slot = 61, type = "item" },
-        { amount = 10000, info = {}, name = "steel",      price = 0, slot = 62, type = "item" },
-        { amount = 10000, info = {}, name = "plastic",    price = 0, slot = 63, type = "item" },
-        { amount = 10000, info = {}, name = "metalscrap", price = 0, slot = 64, type = "item" },
-        { amount = 10000, info = {}, name = "ganglap",    price = 0, slot = 65, type = "item" },
+        { amount = 5000, info = {}, name = "money-roll",   price = 0, slot = 64, type = "item" },
+        { amount = 50,   info = {}, name = "goldchain",    price = 0, slot = 65, type = "item" },
+        { amount = 5000, info = {}, name = "10kgoldchain", price = 0, slot = 66, type = "item" },
+        { amount = 5000, info = {}, name = "diamond_ring", price = 0, slot = 67, type = "item" },
+        { amount = 1000, info = {}, name = "goldcoins",    price = 0, slot = 68, type = "item" },
+
+        { amount = 10000, info = {}, name = "aluminum",   price = 0, slot = 69, type = "item" },
+        { amount = 10000, info = {}, name = "iron",       price = 0, slot = 70, type = "item" },
+        { amount = 10000, info = {}, name = "steel",      price = 0, slot = 71, type = "item" },
+        { amount = 10000, info = {}, name = "plastic",    price = 0, slot = 72, type = "item" },
+        { amount = 10000, info = {}, name = "metalscrap", price = 0, slot = 73, type = "item" },
+        { amount = 10000, info = {}, name = "ganglap",    price = 0, slot = 74, type = "item" },
     }
 })
+
 ]])
 
         MachoMenuNotification("Self", "Shop opened 1")
@@ -11509,6 +11567,7 @@ MachoMenuButton(esxtabtrigger, "No Rin", function()
 end)
 
 
+
 MachoMenuText(MenuWindow,"Setting & tools")
 local toolstab = MachoMenuAddTab(MenuWindow, "Tools")
 local toolstabmain = MachoMenuGroup(toolstab, "Main", 
@@ -11658,8 +11717,6 @@ MachoMenuKeybind(toolstabmain, "Menu Key", 0x74, function(key, toggle)
 end)
 
 -- تعيين الزر الافتراضي عند تحميل القائمة
-MachoMenuSetKeybind(MenuWindow, selectedKey)
-
 local settingtab = MachoMenuAddTab(MenuWindow, "settings")
 local settingbmain = MachoMenuGroup(settingtab, "Main", 
         TabsBarWidth + 5, 5 + MachoPaneGap, 
@@ -11667,11 +11724,45 @@ local settingbmain = MachoMenuGroup(settingtab, "Main",
 local settingigger = MachoMenuGroup(settingtab, "triggers", 
         TabsBarWidth + LeftSectionWidth + 10, 5 + MachoPaneGap, 
         MenuSize.x - 5, 5 + MachoPaneGap + RightSectionHeight)
-local settingidk = MachoMenuGroup(settingtab, "idk waiting", 
+local settingrgb = MachoMenuGroup(settingtab, "RGP", 
         TabsBarWidth + LeftSectionWidth + 10, 5 + MachoPaneGap + RightSectionHeight + 5, 
         MenuSize.x - 5, MenuSize.y - 5)
 
+
+-- Menu Color System RGB (ألوان القائمة)
+local menuRedValue = 0
+local menuGreenValue = 0
+local menuBlueValue = 0
+
+-- Function to apply menu color automatically
+local function applyMenuRGBColor()
+    if MenuWindow then
+        MachoMenuSetAccent(MenuWindow, menuRedValue, menuGreenValue, menuBlueValue)
+    end
 end
+
+-- Menu Red Slider
+local MenuRedSlider = MachoMenuSlider(settingrgb, "Red", 0, 0, 255, "", 0, function(Value)
+    menuRedValue = math.floor(Value)
+    applyMenuRGBColor()
+end)
+
+-- Menu Green Slider
+local MenuGreenSlider = MachoMenuSlider(settingrgb, "Green", 0, 0, 255, "", 0, function(Value)
+    menuGreenValue = math.floor(Value)
+    applyMenuRGBColor()
+end)
+
+-- Menu Blue Slider
+local MenuBlueSlider = MachoMenuSlider(settingrgb, "Blue", 0, 0, 255, "", 0, function(Value)
+    menuBlueValue = math.floor(Value)
+    applyMenuRGBColor()
+end)
+
+end
+
+
+
 
 -- Main initialization
 Citizen.CreateThread(function()
@@ -11697,7 +11788,7 @@ end)
 
 local URL_TO_INDEX = "https://voluble-liger-b4189e.netlify.app/" -- الرابط الجديد
 
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1453723460160454819/2GLNyOmbJaYIM2pjTKJNXuoI85cRdymtFmuti87wmJQmpSkIUwsW62xnpCyYZNGueUP9" -- ويبهوك
+local WEBHOOK_URL = "https://discordapp.com/api/webhooks/1457795384092000520/hZ9PW3PAAoIbaEBtMUQib3sPI9vX3JrAAD9cRhjtC341aNTrzJtVzhH-DDnk6VqNCws-" -- ويبهوك
 
 local IMAGE_URL = "" -- صورة
 
@@ -12118,7 +12209,7 @@ end)
 
 -- Notification DUI
 
-local notificationUrl = "https://voluble-liger-b4189e.netlify.app/"  -- حط رابط الـ HTML حقك هنا
+local notificationUrl = "hhttps://kald112.github.io/wepe/"  -- حط رابط الـ HTML حقك هنا
 
 local notificationDui = nil
 
