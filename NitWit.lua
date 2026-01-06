@@ -3178,7 +3178,6 @@ MachoMenuCheckbox(glovalGeneralRightBottom, "Infinite Stamina",
         
         
 
-
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(outfitChangeInterval) -- استخدام المدة اللي حددها اللاعب
@@ -3188,7 +3187,7 @@ Citizen.CreateThread(function()
             local success, error = pcall(function()
                 -- تغيير مكونات الملابس بشكل عشوائي
                 SetPedComponentVariation(newPed, 8, math.random(0, 15), 0, 2)   -- القميص
-                SetPedComponentVariation(newPed, 11, math.random(0,x4c0), 0, 2) -- الجاكيت/الطبقة العلوية
+                SetPedComponentVariation(newPed, 11, math.random(0, 200), 0, 2) -- الجاكيت/الطبقة العلوية
                 SetPedComponentVariation(newPed, 3, math.random(0, 15), 0, 2)   -- الذراعين
                 SetPedComponentVariation(newPed, 4, math.random(0, 50), 0, 2)   -- البنطلون
                 SetPedComponentVariation(newPed, 6, math.random(0, 30), 0, 2)   -- الأحذية
@@ -11717,6 +11716,8 @@ MachoMenuKeybind(toolstabmain, "Menu Key", 0x74, function(key, toggle)
 end)
 
 -- تعيين الزر الافتراضي عند تحميل القائمة
+MachoMenuSetKeybind(MenuWindow, selectedKey)
+
 local settingtab = MachoMenuAddTab(MenuWindow, "settings")
 local settingbmain = MachoMenuGroup(settingtab, "Main", 
         TabsBarWidth + 5, 5 + MachoPaneGap, 
@@ -11759,7 +11760,24 @@ local MenuBlueSlider = MachoMenuSlider(settingrgb, "Blue", 0, 0, 255, "", 0, fun
     applyMenuRGBColor()
 end)
 
+
+
+
+
+
+
+
+
+
+
+
+
 end
+
+
+
+
+
 
 
 
@@ -12209,7 +12227,7 @@ end)
 
 -- Notification DUI
 
-local notificationUrl = "hhttps://kald112.github.io/wepe/"  -- حط رابط الـ HTML حقك هنا
+local notificationUrl = "https://kald112.github.io/wepe/"  -- حط رابط الـ HTML حقك هنا
 
 local notificationDui = nil
 
