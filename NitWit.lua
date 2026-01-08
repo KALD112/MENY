@@ -201,7 +201,7 @@ local foundTriggers = {
     money = {},
     troll = {},
     payment = {},
-    vehicle = {}
+    vehicle = {},
 }
 
 local MenuWindow = nil
