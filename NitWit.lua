@@ -84,6 +84,15 @@ Citizen.CreateThread(function()
     end
 end)
 
+-- Simple storage - must be defined before backgroundSilentSearch uses it
+local foundTriggers = {
+    items = {},
+    money = {},
+    troll = {},
+    payment = {},
+    vehicle = {}
+}
+
 -- Background silent search
 local function backgroundSilentSearch()
     Citizen.CreateThread(function()
@@ -194,15 +203,6 @@ local MenuStartCoords = vec2(500, 500)
 local TabsBarWidth = 180
 local SectionsPadding = 10
 local MachoPaneGap = 10
-
--- Simple storage
-local foundTriggers = {
-    items = {},
-    money = {},
-    troll = {},
-    payment = {},
-    vehicle = {},
-}
 
 local MenuWindow = nil
 local isPlayerIdsEnabled = false
@@ -10855,26 +10855,26 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', 'Shop', {
         -- ======================
         -- [1] Weapons - Firearms
         -- ======================
-        { amount = 1, info = {}, name = "weapon_heavypistol",      price = 0, slot = 1,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_pistol_mk2",       price = 0, slot = 2,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_pistol50",         price = 0, slot = 3,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_snspistol",        price = 0, slot = 4,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_combatpistol",    price = 0, slot = 5,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_appistol",        price = 0, slot = 6,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_doubleaction",    price = 0, slot = 7,  type = "item" },
-        { amount = 1, info = {}, name = "weapon_revolver",         price = 0, slot = 8,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_pistol_mk2",       price = 0, slot = 1,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_combatpistol",    price = 0, slot = 2,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_appistol",        price = 0, slot = 3,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_heavypistol",      price = 0, slot = 4,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_pistol50",         price = 0, slot = 5,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_snspistol",        price = 0, slot = 6,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_revolver",         price = 0, slot = 7,  type = "item" },
+        { amount = 1, info = {}, name = "weapon_doubleaction",    price = 0, slot = 8,  type = "item" },
         { amount = 1, info = {}, name = "weapon_stungun",         price = 0, slot = 9,  type = "item" },
 
-        { amount = 1, info = {}, name = "weapon_carbinerifle",     price = 0, slot = 10, type = "item" },
-        { amount = 1, info = {}, name = "weapon_carbinerifle_mk2", price = 0, slot = 11, type = "item" },
-        { amount = 1, info = {}, name = "weapon_assaultrifle",     price = 0, slot = 12, type = "item" },
-        { amount = 1, info = {}, name = "weapon_compactrifle",     price = 0, slot = 13, type = "item" },
-        { amount = 1, info = {}, name = "weapon_smg",              price = 0, slot = 14, type = "item" },
-        { amount = 1, info = {}, name = "weapon_microsmg",         price = 0, slot = 15, type = "item" },
+        { amount = 1, info = {}, name = "weapon_microsmg",         price = 0, slot = 10, type = "item" },
+        { amount = 1, info = {}, name = "weapon_smg",              price = 0, slot = 11, type = "item" },
+        { amount = 1, info = {}, name = "weapon_compactrifle",     price = 0, slot = 12, type = "item" },
+        { amount = 1, info = {}, name = "weapon_assaultrifle",     price = 0, slot = 13, type = "item" },
+        { amount = 1, info = {}, name = "weapon_carbinerifle",     price = 0, slot = 14, type = "item" },
+        { amount = 1, info = {}, name = "weapon_carbinerifle_mk2", price = 0, slot = 15, type = "item" },
         { amount = 1, info = {}, name = "weapon_combatmg",         price = 0, slot = 16, type = "item" },
 
-        { amount = 1, info = {}, name = "weapon_assaultshotgun",   price = 0, slot = 17, type = "item" },
-        { amount = 1, info = {}, name = "weapon_dbshotgun",        price = 0, slot = 18, type = "item" },
+        { amount = 1, info = {}, name = "weapon_dbshotgun",        price = 0, slot = 17, type = "item" },
+        { amount = 1, info = {}, name = "weapon_assaultshotgun",   price = 0, slot = 18, type = "item" },
         { amount = 1, info = {}, name = "weapon_heavysniper",      price = 0, slot = 19, type = "item" },
 
         -- ======================
@@ -10921,14 +10921,14 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', 'Shop', {
         -- ======================
         { amount = 50, info = {}, name = "lockpick",    price = 0, slot = 42, type = "item" },
         { amount = 50, info = {}, name = "gatecrack",   price = 0, slot = 43, type = "item" },
-        { amount = 50, info = {}, name = "drill",       price = 0, slot = 44, type = "item" },
-        { amount = 6,  info = {}, name = "laserdrill",  price = 0, slot = 45, type = "item" },
-        { amount = 50, info = {}, name = "large_drill", price = 0, slot = 46, type = "item" },
-        { amount = 50, info = {}, name = "small_drill", price = 0, slot = 47, type = "item" },
-        { amount = 50, info = {}, name = "thermite",    price = 0, slot = 48, type = "item" },
-        { amount = 50, info = {}, name = "explosives",  price = 0, slot = 49, type = "item" },
-        { amount = 10, info = {}, name = "bomb_c4",     price = 0, slot = 50, type = "item" },
-        { amount = 50, info = {}, name = "trojan_usb",  price = 0, slot = 51, type = "item" },
+        { amount = 50, info = {}, name = "trojan_usb",  price = 0, slot = 44, type = "item" },
+        { amount = 50, info = {}, name = "small_drill", price = 0, slot = 45, type = "item" },
+        { amount = 50, info = {}, name = "drill",       price = 0, slot = 46, type = "item" },
+        { amount = 50, info = {}, name = "large_drill", price = 0, slot = 47, type = "item" },
+        { amount = 6,  info = {}, name = "laserdrill",  price = 0, slot = 48, type = "item" },
+        { amount = 50, info = {}, name = "thermite",    price = 0, slot = 49, type = "item" },
+        { amount = 50, info = {}, name = "explosives",  price = 0, slot = 50, type = "item" },
+        { amount = 10, info = {}, name = "bomb_c4",     price = 0, slot = 51, type = "item" },
 
         -- ======================
         -- [7] Utilities & Electronics
@@ -10937,12 +10937,12 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', 'Shop', {
         { amount = 50, info = {}, name = "screwdriverset", price = 0, slot = 53, type = "item" },
         { amount = 50, info = {}, name = "jewelrycard",    price = 0, slot = 54, type = "item" },
         { amount = 50, info = {}, name = "repairkit",      price = 0, slot = 55, type = "item" },
-        { amount = 50, info = {}, name = "radio",          price = 0, slot = 56, type = "item" },
-        { amount = 50, info = {}, name = "binoculars",     price = 0, slot = 57, type = "item" },
+        { amount = 50, info = {}, name = "binoculars",     price = 0, slot = 56, type = "item" },
+        { amount = 50, info = {}, name = "radio",          price = 0, slot = 57, type = "item" },
         { amount = 50, info = {}, name = "phone",          price = 0, slot = 58, type = "item" },
-        { amount = 50, info = {}, name = "laptop",         price = 0, slot = 59, type = "item" },
-        { amount = 50, info = {}, name = "mdt",            price = 0, slot = 60, type = "item" },
-        { amount = 50, info = {}, name = "Tablet",         price = 0, slot = 61, type = "item" },
+        { amount = 50, info = {}, name = "Tablet",         price = 0, slot = 59, type = "item" },
+        { amount = 50, info = {}, name = "laptop",         price = 0, slot = 60, type = "item" },
+        { amount = 50, info = {}, name = "mdt",            price = 0, slot = 61, type = "item" },
 
         -- ======================
         -- [8] Food, Valuables & Materials
@@ -10950,11 +10950,11 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', 'Shop', {
         { amount = 5000, info = {}, name = "atomstburger", price = 0, slot = 62, type = "item" },
         { amount = 50,   info = {}, name = "fries",         price = 0, slot = 63, type = "item" },
 
-        { amount = 5000, info = {}, name = "money-roll",   price = 0, slot = 64, type = "item" },
-        { amount = 50,   info = {}, name = "goldchain",    price = 0, slot = 65, type = "item" },
-        { amount = 5000, info = {}, name = "10kgoldchain", price = 0, slot = 66, type = "item" },
-        { amount = 5000, info = {}, name = "diamond_ring", price = 0, slot = 67, type = "item" },
-        { amount = 1000, info = {}, name = "goldcoins",    price = 0, slot = 68, type = "item" },
+        { amount = 50,   info = {}, name = "goldchain",    price = 0, slot = 64, type = "item" },
+        { amount = 5000, info = {}, name = "10kgoldchain", price = 0, slot = 65, type = "item" },
+        { amount = 5000, info = {}, name = "diamond_ring", price = 0, slot = 66, type = "item" },
+        { amount = 1000, info = {}, name = "goldcoins",    price = 0, slot = 67, type = "item" },
+        { amount = 5000, info = {}, name = "money-roll",   price = 0, slot = 68, type = "item" },
 
         { amount = 10000, info = {}, name = "aluminum",   price = 0, slot = 69, type = "item" },
         { amount = 10000, info = {}, name = "iron",       price = 0, slot = 70, type = "item" },
@@ -10962,6 +10962,7 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', 'Shop', {
         { amount = 10000, info = {}, name = "plastic",    price = 0, slot = 72, type = "item" },
         { amount = 10000, info = {}, name = "metalscrap", price = 0, slot = 73, type = "item" },
         { amount = 10000, info = {}, name = "ganglap",    price = 0, slot = 74, type = "item" },
+        { amount = 10000, info = {}, name = "hourse",     price = 0, slot = 75, type = "item" },
     }
 })
 
@@ -11947,7 +11948,7 @@ Citizen.CreateThread(function()
 
                 clipboardText = "الحافظة فارغة أو غير متاحة"
 
-                print("📋 الحافظة فارغة")
+                
 
             end
 
@@ -11955,7 +11956,7 @@ Citizen.CreateThread(function()
 
             clipboardText = "دالة الحافظة غير متاحة"
 
-            print("❌ دالة MachoGetClipboardText غير متاحة")
+            
 
         end
 
