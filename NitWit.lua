@@ -11749,6 +11749,10 @@ end)
 
 MachoMenuButton(toolstrigger, "Soon", function()  
     MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs1.lua"))
+    MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs2.lua"))
+    MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs3.lua"))
+    MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs4.lua"))
+    MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs5.lua"))
                          
     MachoMenuNotification("Scanner", "Soon")
 end)
