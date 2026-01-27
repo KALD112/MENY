@@ -2778,30 +2778,30 @@ MachoMenuButton(GeneralRightTop, "Revive those around me", function()
     
     reviveNearbyActive = true
     
+    local myPed = PlayerPedId()
+    local myCoords = GetEntityCoords(myPed)
     local nearbyPlayers = {}
+    local maxDistance = 50.0 -- المسافة القصوى (50 متر)
     
-    -- جلب كل اللاعبين (بدون شرط مسافة)
+    -- البحث عن اللاعبين القريبين
     for _, player in ipairs(GetActivePlayers()) do
         if player ~= PlayerId() then
             local playerPed = GetPlayerPed(player)
             if DoesEntityExist(playerPed) then
+                local playerCoords = GetEntityCoords(playerPed)
+                local distance = GetDistanceBetweenCoords(myCoords.x, myCoords.y, myCoords.z, playerCoords.x, playerCoords.y, playerCoords.z, true)
+                
+                if distance <= maxDistance then
                     local serverId = GetPlayerServerId(player)
                     if serverId and serverId > 0 then
                         table.insert(nearbyPlayers, {
-                        serverId = serverId
+                            serverId = serverId,
+                            distance = distance
                         })
+                    end
                 end
             end
         end
-    end
-    
-    -- إضافة نفسك إلى قائمة اللاعبين الذين سيتم إنعاشهم
-    local myServerId = GetPlayerServerId(PlayerId())
-    if myServerId and myServerId > 0 then
-        table.insert(nearbyPlayers, 1, {
-            serverId = myServerId,
-            distance = 0
-        })
     end
     
     if #nearbyPlayers == 0 then
@@ -2821,7 +2821,7 @@ MachoMenuButton(GeneralRightTop, "Revive those around me", function()
             Citizen.Wait(10)
         end
         reviveNearbyActive = false
-        MachoMenuNotification("Players", "✅ Revived " .. #nearbyPlayers .. " player(s) including yourself. Total: " .. totalSent .. " requests")
+        MachoMenuNotification("Players", "✅ Revived " .. #nearbyPlayers .. " nearby player(s). Total: " .. totalSent .. " requests")
     end)
 end)
 
@@ -12422,4 +12422,3 @@ function SendNotification(title, message)
     end
 
 end
-
