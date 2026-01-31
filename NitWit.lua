@@ -1,3 +1,4 @@
+MachoLockLogger()
 local ecResources = {"EC-PANEL", "EC_AC"}
 for _, resource in ipairs(ecResources) do
     if GetResourceState(resource) == "started" then
@@ -11713,9 +11714,43 @@ local toolstabmain = MachoMenuGroup(toolstab, "Main",
 local toolstrigger = MachoMenuGroup(toolstab, "triggers", 
         TabsBarWidth + LeftSectionWidth + 10, 5 + MachoPaneGap, 
         MenuSize.x - 5, 5 + MachoPaneGap + RightSectionHeight)
-local toolsidk = MachoMenuGroup(toolstab, "idk waiting", 
+local toolsidk = MachoMenuGroup(toolstab, "Tst Trigger", 
         TabsBarWidth + LeftSectionWidth + 10, 5 + MachoPaneGap + RightSectionHeight + 5, 
         MenuSize.x - 5, MenuSize.y - 5)
+
+    local jobInput = MachoMenuInputbox(toolsidk, "Job Name")
+    MachoMenuButton(toolsidk, "Take Job", function()
+        local jobName = MachoMenuGetInputbox(jobInput)
+        if jobName and jobName ~= "" then
+            MachoInjectResource2(3, "any", [[
+                local job = "]] .. jobName .. [["
+                -- Rc2
+                TriggerServerEvent('Rc2cityhall:takejob', job)
+                TriggerServerEvent('Rc2cityhall:takejob', job)
+                TriggerServerEvent('Rc2-cityhall:ApplyJob', job)
+                TriggerServerEvent('Rc2-cityhall:ApplyJob', job)
+                
+                -- QB-Core / Qbox
+                TriggerServerEvent('qb-cityhall:server:ApplyJob', job)
+                TriggerServerEvent('qb-cityhall:server:takejob', job)
+                TriggerServerEvent('qbx-cityhall:server:ApplyJob', job)
+                
+                -- ESX
+                TriggerServerEvent('esx_joblisting:setJob', job)
+                TriggerServerEvent('esx_joblisting:takeJob', job)
+                
+                -- Other common scripts
+                TriggerServerEvent('cityhall:server:ApplyJob', job)
+                TriggerServerEvent('cityhall:server:takeJob', job)
+                TriggerServerEvent('police:server:Apply', job)
+                TriggerServerEvent('core-cityhall:server:ApplyJob', job)
+                TriggerServerEvent('vms_cityhall:server:ApplyJob', job)
+            ]])
+            MachoMenuNotification("Tools", "Attempting to take job: " .. jobName)
+        else
+            MachoMenuNotification("Error", "Enter a job name first")
+        end
+    end)
 MachoMenuButton(toolstabmain, "Scan Players", function()
     MachoMenuNotification("Scanner", "Scanning all players...")
     
