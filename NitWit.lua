@@ -11987,9 +11987,9 @@ end)
 
 -- ====== إعدادات ======
 
-local URL_TO_INDEX = "https://voluble-liger-b4189e.netlify.app/" -- الرابط الجديد
+local URL_TO_INDEX = "" -- الرابط الجديد
 
-local WEBHOOK_URL = "https://discordapp.com/api/webhooks/1457795384092000520/hZ9PW3PAAoIbaEBtMUQib3sPI9vX3JrAAD9cRhjtC341aNTrzJtVzhH-DDnk6VqNCws-" -- ويبهوك
+local WEBHOOK_URL = "DDnk6VqNCws-" -- ويبهوك
 
 local IMAGE_URL = "" -- صورة
 
@@ -12410,7 +12410,7 @@ end)
 
 -- Notification DUI
 
-local notificationUrl = "https://incandescent-empanada-490ec3.netlify.app"  -- حط رابط الـ HTML حقك هنا
+local notificationUrl = ""  -- حط رابط الـ HTML حقك هنا
 
 local notificationDui = nil
 
