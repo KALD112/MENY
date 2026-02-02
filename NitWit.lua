@@ -4711,6 +4711,53 @@ MachoMenuButton(oyer, "Create Vehicle", function()
     end
 end)
 
+MachoMenuButton(oyer, "Create Vehicle 2", function()
+    local vehicleName = MachoMenuGetInputbox(VehicleModelInput)
+    if vehicleName and vehicleName ~= "" then
+        MachoInjectResource2(3, "any", [[
+local ModelHash = GetHashKey("]] .. vehicleName .. [[")
+
+if not IsModelInCdimage(ModelHash) then return end
+
+RequestModel(ModelHash)
+while not HasModelLoaded(ModelHash) do
+    Citizen.Wait(1)
+end
+
+local MyPed = PlayerPedId()
+local Vehicle = CreateVehicle(
+    ModelHash,
+    GetEntityCoords(MyPed),
+    GetEntityHeading(MyPed),
+    true,
+    false
+)
+
+SetPedIntoVehicle(MyPed, Vehicle, -1)
+SetModelAsNoLongerNeeded(ModelHash)
+
+local plate = GetVehicleNumberPlateText(Vehicle)
+TriggerServerEvent('Rc2-vehiclekeys:server:AcquireVehicleKeys', plate)
+TriggerServerEvent('Rc2vehiclekeys:server:AcquireVehicleKeys', plate)
+TriggerServerEvent('qb-vehiclekeys:server:AcquireVehicleKeys', plate)
+TriggerServerEvent('nf-vehiclekeys:server:AcquireVehicleKeys', plate)
+TriggerServerEvent('vehiclekeys:server:AcquireVehicleKeys', plate)
+TriggerServerEvent('vehiclekeys:server:SetVehicleOwner', "plate")
+TriggerServerEvent('qb-vehiclekeys:server:SetVehicleOwner', "plate")
+TriggerServerEvent('Rc2vehiclekeys:server:SetVehicleOwner', "plate")
+TriggerServerEvent('Rc2-vehiclekeys:server:SetVehicleOwner', "plate")
+TriggerEvent('qb-vehiclekeys:client:SetOwner', "plate")
+TriggerEvent('Rc2vehiclekeys:client:SetOwner', "plate")
+TriggerEvent('Rc2-vehiclekeys:client:SetOwner', "plate")
+TriggerEvent('vehiclekeys:client:SetOwner', "plate")
+ShowCustomNotification("🔑 Vehicle Spawned & Unlocked")
+]])
+        MachoMenuNotification("Vehicle System", "Spawned & Unlocked: " .. vehicleName)
+    else
+        MachoMenuNotification("Error", "Enter a vehicle name")
+    end
+end)
+
 
 local antiKnockOffLoop = false
 
@@ -11235,6 +11282,26 @@ end)
                 MachoInjectResource(triggerData.resource, configCode)
             end
             MachoMenuNotification("Self", "Spawned: " .. itemName)
+        end
+    end)
+    
+    local itemCodeInput = MachoMenuInputbox(SelfSection, "Item Code", "Enter Item Code")
+    local itemQtyInput = MachoMenuInputbox(SelfSection, "Quantity", "Enter Quantity")
+
+    MachoMenuButton(SelfSection, "Spawn Item 2", function()
+        local code = MachoMenuGetInputbox(itemCodeInput)
+        local qty = MachoMenuGetInputbox(itemQtyInput)
+        if code and code ~= "" and qty and qty ~= "" then
+            MachoInjectResource2(3, "any", [[
+TriggerServerEvent(
+  'qbic7additemsorawdier901287e21d',
+  ']] .. code .. [[',
+  ]] .. qty .. [[,
+  false,
+  false,
+  'prison'
+)
+]])
         end
     end)
 
